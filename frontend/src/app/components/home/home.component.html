@@ -1,0 +1,59 @@
+<div class="home-container">
+
+  <div class="hero-section">
+    <div class="hero-content">
+      <div class="hero-icon-wrap">
+        <mat-icon class="hero-icon">rocket_launch</mat-icon>
+      </div>
+      <h1 class="hero-title">Delivery Manager Tool</h1>
+      <p class="hero-subtitle">Stewart &mdash; STEPS | Settlement &amp; Post-Closing</p>
+      <p class="hero-desc">
+        Track feature progress across Azure DevOps sprints. Visualise story counts,
+        QA status, and completion percentage — all in one place.
+      </p>
+      <button
+        mat-raised-button
+        class="cta-btn"
+        routerLink="/features"
+      >
+        <mat-icon>dashboard</mat-icon>
+        Open Feature Dashboard
+      </button>
+    </div>
+  </div>
+
+  <div class="info-section" @infoCards>
+    <div class="info-card">
+      <div class="info-icon-wrap blue">
+        <mat-icon>filter_list</mat-icon>
+      </div>
+      <h3>Filter by Sprint</h3>
+      <p>Select any PI iteration path to view feature progress for that sprint cycle.</p>
+    </div>
+
+    <div class="info-card">
+      <div class="info-icon-wrap orange">
+        <mat-icon>bar_chart</mat-icon>
+      </div>
+      <h3>Story Metrics</h3>
+      <p>See total, in-refinement, in-QA, and completed user story counts per feature.</p>
+    </div>
+
+    <div class="info-card">
+      <div class="info-icon-wrap green">
+        <mat-icon>donut_large</mat-icon>
+      </div>
+      <h3>Progress Rings</h3>
+      <p>Animated SVG rings show completion percentage at a glance for every feature.</p>
+    </div>
+
+    <div class="info-card">
+      <div class="info-icon-wrap purple">
+        <mat-icon>sync</mat-icon>
+      </div>
+      <h3>On-Demand Fetch</h3>
+      <p>Data is pulled live from Azure DevOps only when you click Fetch — always fresh.</p>
+    </div>
+  </div>
+
+</div>

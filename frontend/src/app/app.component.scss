@@ -1,0 +1,47 @@
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-toolbar {
+  position: relative;
+  z-index: 100;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22);
+
+  .toolbar-icon {
+    margin-right: 10px;
+    font-size: 22px;
+  }
+
+  .toolbar-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .spacer {
+    flex: 1;
+  }
+
+  .toolbar-subtitle {
+    font-size: 0.82rem;
+    opacity: 0.75;
+    letter-spacing: 0.04em;
+  }
+}
+
+.body-area {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.page-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+}

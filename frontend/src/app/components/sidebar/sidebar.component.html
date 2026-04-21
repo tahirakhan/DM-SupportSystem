@@ -1,0 +1,27 @@
+<nav class="sidebar" [class.collapsed]="collapsed">
+
+  <div class="sidebar-header">
+    <button class="toggle-btn" (click)="toggleCollapsed.emit()" [matTooltip]="collapsed ? 'Expand menu' : ''" matTooltipPosition="right">
+      <mat-icon>{{ collapsed ? 'menu' : 'menu_open' }}</mat-icon>
+    </button>
+    <span class="brand-name" [@labelFade]="collapsed ? 'hidden' : 'visible'">DM Tool</span>
+  </div>
+
+  <ul class="nav-list" role="navigation">
+    <li
+      *ngFor="let item of navItems"
+      class="nav-item"
+      [class.active]="isActive(item.route)"
+      (click)="navigate(item.route)"
+      [matTooltip]="collapsed ? item.label : ''"
+      matTooltipPosition="right"
+      matRipple
+      [matRippleColor]="'rgba(255,255,255,0.12)'"
+      role="menuitem"
+    >
+      <mat-icon class="nav-icon">{{ item.icon }}</mat-icon>
+      <span class="nav-label" [@labelFade]="collapsed ? 'hidden' : 'visible'">{{ item.label }}</span>
+    </li>
+  </ul>
+
+</nav>

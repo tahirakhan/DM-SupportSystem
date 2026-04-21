@@ -1,0 +1,13 @@
+{
+  "pat": "YOUR_PERSONAL_ACCESS_TOKEN_HERE",
+  "organization": "YOUR_ADO_ORGANIZATION",
+  "project": "STEPS",
+  "defaultAreaPath": "STEPS\\Settlement and Post-Closing\\Celestials",
+  "defaultIterationPath": "STEPS\\2026\\PI-1",
+  "iterationPaths": [
+    "STEPS\\2026\\PI-1",
+    "STEPS\\2026\\PI-2",
+    "STEPS\\2026\\PI-3",
+    "STEPS\\2026\\PI-4"
+  ]
+}

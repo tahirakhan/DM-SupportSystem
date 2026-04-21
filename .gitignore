@@ -1,0 +1,35 @@
+node_modules/
+dist/
+.env
+*.local
+
+# Angular build cache
+frontend/.angular/
+
+# Claude Code local settings
+.claude/
+
+# Backend build output
+backend/dist/
+
+# Frontend build output
+frontend/dist/
+
+# Config with secrets (never commit real PAT)
+backend/config/ado.config.json
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*

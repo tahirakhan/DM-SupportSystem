@@ -1,0 +1,38 @@
+<svg
+  [attr.width]="size"
+  [attr.height]="size"
+  [attr.viewBox]="'0 0 ' + size + ' ' + size"
+  class="progress-ring"
+>
+  <!-- Track -->
+  <circle
+    [attr.cx]="center"
+    [attr.cy]="center"
+    [attr.r]="radius"
+    fill="none"
+    stroke="#e0e0e0"
+    [attr.stroke-width]="strokeWidth"
+  />
+  <!-- Progress arc -->
+  <circle
+    [attr.cx]="center"
+    [attr.cy]="center"
+    [attr.r]="radius"
+    fill="none"
+    [attr.stroke]="ringColor"
+    [attr.stroke-width]="strokeWidth"
+    [attr.stroke-dasharray]="circumference"
+    [attr.stroke-dashoffset]="dashOffset"
+    stroke-linecap="round"
+    [attr.transform]="transform"
+    class="progress-arc"
+  />
+  <!-- Label -->
+  <text
+    [attr.x]="center"
+    [attr.y]="center"
+    text-anchor="middle"
+    dominant-baseline="central"
+    class="ring-label"
+  >{{ percent }}%</text>
+</svg>

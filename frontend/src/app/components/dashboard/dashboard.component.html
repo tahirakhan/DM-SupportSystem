@@ -1,0 +1,91 @@
+<app-filters-bar
+  [loading]="loading"
+  (fetchRequested)="fetch()"
+></app-filters-bar>
+
+<div class="dashboard-content">
+
+  <!-- Pre-fetch idle -->
+  <div class="state-container idle-state" *ngIf="!loading && !hasFetched">
+    <mat-icon class="state-icon idle-icon">cloud_queue</mat-icon>
+    <p class="state-message">
+      Select filters above and click <strong>Fetch Details</strong> to load features.
+    </p>
+  </div>
+
+  <!-- Loading -->
+  <div class="state-container" *ngIf="loading">
+    <mat-spinner diameter="56"></mat-spinner>
+    <p class="state-message">Loading features from Azure DevOps&hellip;</p>
+  </div>
+
+  <!-- Error -->
+  <div class="state-container error-state" *ngIf="hasFetched && !loading && error">
+    <mat-icon class="state-icon error-icon">error_outline</mat-icon>
+    <p class="state-message">{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="fetch()">
+      <mat-icon>refresh</mat-icon> Retry
+    </button>
+  </div>
+
+  <!-- Empty -->
+  <div class="state-container" *ngIf="hasFetched && !loading && !error && features.length === 0">
+    <mat-icon class="state-icon muted-icon">inbox</mat-icon>
+    <p class="state-message">No features found for the selected filters.</p>
+  </div>
+
+  <!-- Features grid -->
+  <ng-container *ngIf="!loading && !error && features.length > 0">
+
+    <!-- Summary widget -->
+    <div class="summary-bar">
+      <div class="stat-card stat-purple">
+        <div class="stat-label">Total Stories</div>
+        <div class="stat-value">{{ summary.totalStories }}</div>
+        <div class="stat-sub">Across {{ summary.totalFeatures }} features</div>
+      </div>
+      <div class="stat-card stat-blue">
+        <div class="stat-label">Story Points</div>
+        <div class="stat-value">{{ summary.totalPoints }}</div>
+        <div class="stat-sub">{{ summary.donePoints }} SP completed</div>
+      </div>
+      <div class="stat-card stat-green">
+        <div class="stat-label">Done</div>
+        <div class="stat-value">{{ summary.doneCount }}</div>
+        <div class="stat-sub">{{ summary.donePct }}% of stories</div>
+      </div>
+      <div class="stat-card stat-orange">
+        <div class="stat-label">In Progress</div>
+        <div class="stat-value">{{ summary.inProgressCount }}</div>
+        <div class="stat-sub">{{ summary.activePoints }} SP active</div>
+      </div>
+      <div class="stat-card stat-red">
+        <div class="stat-label">Blocked</div>
+        <div class="stat-value">{{ summary.blockedCount }}</div>
+        <div class="stat-sub" [class.attention]="summary.blockedCount > 0">
+          {{ summary.blockedCount > 0 ? 'Needs attention' : 'All clear' }}
+        </div>
+      </div>
+      <div class="stat-card stat-teal">
+        <div class="stat-label">Features</div>
+        <div class="stat-value">{{ summary.withStories }}<span class="stat-denom">/{{ summary.totalFeatures }}</span></div>
+        <div class="stat-sub">{{ summary.noStories }} have no stories</div>
+      </div>
+    </div>
+
+    <div class="dashboard-header">
+      <span class="last-loaded" *ngIf="lastLoaded">
+        <mat-icon class="check-icon">check_circle</mat-icon>
+        Loaded at {{ lastLoaded | date:'HH:mm:ss' }}
+      </span>
+    </div>
+
+    <div class="features-grid" [@cardStagger]="features.length">
+      <app-feature-card
+        *ngFor="let feature of features"
+        [feature]="feature"
+      ></app-feature-card>
+    </div>
+  </ng-container>
+
+</div>

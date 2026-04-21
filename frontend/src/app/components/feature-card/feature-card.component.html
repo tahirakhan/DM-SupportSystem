@@ -1,0 +1,90 @@
+<mat-card class="feature-card">
+
+  <!-- % complete badge -->
+  <div class="pct-badge" [ngClass]="pctClass">{{ feature.percentComplete }}%</div>
+
+  <!-- Header -->
+  <mat-card-header>
+    <mat-card-title>
+      <a class="feature-title" [href]="feature.adoUrl" target="_blank" rel="noopener" [matTooltip]="feature.title">
+        {{ feature.title }}
+      </a>
+    </mat-card-title>
+    <mat-card-subtitle class="feature-meta">
+      <span class="feature-state-badge" [ngClass]="featureStateClass">{{ feature.state }}</span>
+      <span class="tshirt-badge" *ngIf="feature.tshirtSize">{{ feature.tshirtSize }}</span>
+      <span class="feature-id">#{{ feature.id }}</span>
+    </mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+
+    <!-- Stories bar -->
+    <div class="bar-section">
+      <div class="bar-header">
+        <span class="bar-label">
+          <mat-icon class="bar-icon">format_list_bulleted</mat-icon>
+          Stories
+        </span>
+        <span class="bar-counts">
+          <strong>{{ doneCount }}</strong><span class="bar-total"> / {{ feature.totalStories }}</span>
+        </span>
+      </div>
+
+      <div class="seg-bar">
+        <div
+          *ngFor="let seg of itemsBar"
+          class="seg"
+          [style.width.%]="seg.pct"
+          [style.background-color]="seg.color"
+          [matTooltip]="seg.tooltip"
+          matTooltipPosition="above"
+        >
+          <span *ngIf="seg.pct >= 10" class="seg-label">{{ seg.count }}</span>
+        </div>
+      </div>
+
+      <!-- Per-state legend (only states with count > 0) -->
+      <div class="bar-legend">
+        <ng-container *ngFor="let s of activeLegend">
+          <span class="legend-dot" [style.background-color]="s.color"></span>
+          <span class="legend-text">{{ s.label }}&nbsp;({{ count(s.key) }})</span>
+        </ng-container>
+      </div>
+    </div>
+
+    <!-- Story Points bar -->
+    <div class="bar-section" *ngIf="feature.totalPoints > 0">
+      <div class="bar-header">
+        <span class="bar-label">
+          <mat-icon class="bar-icon">speed</mat-icon>
+          Story Points
+        </span>
+        <span class="bar-counts">
+          <strong>{{ feature.donePoints }}</strong><span class="bar-total"> / {{ feature.totalPoints }}</span>
+        </span>
+      </div>
+
+      <div class="seg-bar">
+        <div
+          *ngFor="let seg of pointsBar"
+          class="seg"
+          [style.width.%]="seg.pct"
+          [style.background-color]="seg.color"
+          [matTooltip]="seg.tooltip"
+          matTooltipPosition="above"
+        >
+          <span *ngIf="seg.pct >= 10" class="seg-label">{{ seg.count }}</span>
+        </div>
+      </div>
+
+      <div class="bar-legend">
+        <ng-container *ngFor="let e of pointsLegend">
+          <span class="legend-dot" [style.background-color]="e.color"></span>
+          <span class="legend-text">{{ e.label }}&nbsp;({{ e.value }} pts)</span>
+        </ng-container>
+      </div>
+    </div>
+
+  </mat-card-content>
+</mat-card>

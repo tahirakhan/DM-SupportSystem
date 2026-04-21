@@ -1,0 +1,46 @@
+.filters-bar {
+  background: #fff;
+  padding: 12px 24px;
+  border-bottom: 1px solid #e0e0e0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.filters-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-field {
+  min-width: 280px;
+  flex: 1;
+  max-width: 440px;
+}
+
+.fetch-btn {
+  height: 56px;
+  padding: 0 20px;
+  margin-bottom: 1.34375em; /* match mat-form-field subscript height so inputs and button sit level */
+  border-radius: 4px !important;
+  font-weight: 600 !important;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  transition: box-shadow 0.2s, transform 0.15s;
+
+  &:not([disabled]):hover {
+    box-shadow: 0 4px 12px rgba(25, 118, 210, 0.35);
+    transform: translateY(-1px);
+  }
+
+  &:not([disabled]):active {
+    transform: scale(0.97);
+  }
+
+  .btn-spinner {
+    display: inline-flex;
+  }
+}

@@ -1,0 +1,135 @@
+.sidebar {
+  width: 240px;
+  height: 100%;
+  background: linear-gradient(180deg, #1a237e 0%, #283593 100%);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.18);
+
+  &.collapsed {
+    width: 64px;
+  }
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  height: 64px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+  overflow: hidden;
+
+  .toggle-btn {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    &:active {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(0.92);
+      transition: transform 0.1s;
+    }
+
+    mat-icon {
+      font-size: 22px;
+    }
+  }
+
+  .brand-name {
+    margin-left: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+}
+
+.nav-list {
+  list-style: none;
+  padding: 10px 0;
+  margin: 0;
+  flex: 1;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  height: 52px;
+  cursor: pointer;
+  transition: background 0.18s;
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: transparent;
+    transition: background 0.2s;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  &.active {
+    background: rgba(255, 255, 255, 0.14);
+
+    &::before {
+      background: #fff;
+    }
+
+    .nav-icon,
+    .nav-label {
+      color: #fff;
+      font-weight: 600;
+    }
+  }
+
+  .nav-icon {
+    font-size: 22px;
+    height: 22px;
+    width: 22px;
+    flex-shrink: 0;
+    color: rgba(255, 255, 255, 0.8);
+    transition: color 0.18s;
+  }
+
+  .nav-label {
+    margin-left: 14px;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+    overflow: hidden;
+    white-space: nowrap;
+    transition: color 0.18s;
+  }
+
+  &:hover .nav-icon,
+  &:hover .nav-label {
+    color: #fff;
+  }
+}

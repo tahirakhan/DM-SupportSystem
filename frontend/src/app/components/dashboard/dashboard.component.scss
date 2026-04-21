@@ -1,0 +1,132 @@
+.dashboard-content {
+  padding: 20px 24px 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ─── States ───────────────────────────────────────────────── */
+
+.state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  gap: 16px;
+
+  .state-icon {
+    font-size: 56px;
+    height: 56px;
+    width: 56px;
+  }
+
+  .state-message {
+    font-size: 1rem;
+    color: #616161;
+    margin: 0;
+    text-align: center;
+
+    strong { color: #1565c0; }
+  }
+}
+
+.idle-state  .idle-icon  { color: #90a4ae; }
+.error-state .error-icon { color: #e53935; }
+.muted-icon              { color: #bdbdbd; }
+
+/* ─── Summary Widget ───────────────────────────────────────── */
+
+.summary-bar {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+
+  @media (max-width: 1100px) { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 640px)  { grid-template-columns: repeat(2, 1fr); }
+}
+
+.stat-card {
+  background: #1a1f2e;
+  border-radius: 10px;
+  padding: 14px 16px 12px;
+  border-top: 3px solid transparent;
+  color: #fff;
+
+  .stat-label {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #8892a4;
+    margin-bottom: 6px;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 5px;
+
+    .stat-denom {
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #8892a4;
+    }
+  }
+
+  .stat-sub {
+    font-size: 0.7rem;
+    color: #8892a4;
+
+    &.attention { color: #ff5252; font-weight: 600; }
+  }
+
+  &.stat-purple { border-top-color: #7c4dff; }
+  &.stat-blue   { border-top-color: #448aff; }
+  &.stat-green  { border-top-color: #00e676; }
+  &.stat-orange { border-top-color: #ffab40; }
+  &.stat-red    { border-top-color: #ff5252; }
+  &.stat-teal   { border-top-color: #1de9b6; }
+}
+
+/* ─── Grid ─────────────────────────────────────────────────── */
+
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  .feature-count {
+    font-size: 0.85rem;
+    color: #757575;
+    font-weight: 500;
+  }
+
+  .last-loaded {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.78rem;
+    color: #388e3c;
+
+    .check-icon {
+      font-size: 14px;
+      height: 14px;
+      width: 14px;
+    }
+  }
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 20px;
+  align-items: stretch;
+
+  app-feature-card {
+    display: flex;
+    flex-direction: column;
+  }
+}

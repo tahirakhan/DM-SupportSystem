@@ -1,0 +1,15 @@
+.progress-ring {
+  display: block;
+  flex-shrink: 0;
+
+  .progress-arc {
+    transition: stroke-dashoffset 0.5s ease-in-out, stroke 0.3s ease;
+  }
+
+  .ring-label {
+    font-size: 13px;
+    font-weight: 600;
+    fill: #424242;
+    font-family: Roboto, sans-serif;
+  }
+}
