@@ -73,7 +73,10 @@ class AdoService {
     if (storyIds.length > 0) {
       const stories = await this.batchFetchWorkItems(storyIds, false);
       for (const s of stories) {
-        if (s.fields['System.WorkItemType'] === 'User Story') {
+        if (
+          s.fields['System.WorkItemType'] === 'User Story' &&
+          s.fields['System.State']?.toLowerCase() !== 'removed'
+        ) {
           storiesMap.set(s.id, s);
         }
       }
@@ -114,6 +117,7 @@ class AdoService {
     const query = [
       `SELECT [System.Id] FROM WorkItems`,
       `WHERE [System.WorkItemType] = 'Feature'`,
+      `AND [System.State] <> 'Removed'`,
       `AND [System.AreaPath] UNDER '${areaPath}'`,
       `AND [System.IterationPath] = '${iterationPath}'`,
       `ORDER BY [System.Id]`,
