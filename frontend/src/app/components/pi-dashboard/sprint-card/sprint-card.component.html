@@ -1,0 +1,49 @@
+<div class="sprint-card" [style.border-top-color]="statusColor">
+
+  <div class="sprint-header">
+    <span class="sprint-name" [matTooltip]="sprint.path">{{ sprint.name }}</span>
+    <span class="status-badge" [style.background]="statusColor + '22'" [style.color]="statusColor">
+      {{ statusLabel }}
+    </span>
+  </div>
+
+  <div class="sprint-dates" *ngIf="sprint.startDate || sprint.finishDate">
+    <mat-icon class="date-icon">date_range</mat-icon>
+    {{ formatDate(sprint.startDate) }}
+    <ng-container *ngIf="sprint.startDate && sprint.finishDate"> – </ng-container>
+    {{ formatDate(sprint.finishDate) }}
+  </div>
+
+  <!-- Big % -->
+  <div class="sprint-pct" [style.color]="statusColor">
+    {{ sprint.percentComplete }}%
+  </div>
+
+  <!-- Progress bar -->
+  <div class="sprint-bar-wrap">
+    <div class="sprint-bar">
+      <div class="bar-seg seg-done"    [style.width.%]="doneWidth"    matTooltip="Done"></div>
+      <div class="bar-seg seg-active"  [style.width.%]="activeWidth"  matTooltip="In Progress"></div>
+      <div class="bar-seg seg-blocked" [style.width.%]="blockedWidth" matTooltip="Blocked"></div>
+    </div>
+  </div>
+
+  <!-- Story / point counts -->
+  <div class="sprint-stats">
+    <div class="sprint-stat">
+      <mat-icon class="stat-icon">check_circle</mat-icon>
+      <span class="stat-val">{{ sprint.doneStories }}/{{ sprint.totalStories }}</span>
+      <span class="stat-lbl">stories</span>
+    </div>
+    <div class="sprint-stat">
+      <mat-icon class="stat-icon">star</mat-icon>
+      <span class="stat-val">{{ sprint.donePoints }}/{{ sprint.totalPoints }}</span>
+      <span class="stat-lbl">pts</span>
+    </div>
+    <div class="sprint-stat" *ngIf="sprint.blockedStories > 0">
+      <mat-icon class="stat-icon blocked-icon">block</mat-icon>
+      <span class="stat-val blocked-val">{{ sprint.blockedStories }}</span>
+      <span class="stat-lbl">blocked</span>
+    </div>
+  </div>
+</div>

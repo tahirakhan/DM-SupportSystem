@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import {
   trigger, transition, style, animate, query, stagger, keyframes,
 } from '@angular/animations';
-import { AdoApiService } from '../../services/ado-api.service';
+import { Subscription } from 'rxjs';
 import { ConfigService } from '../../services/config.service';
+import { FeatureStoreService } from '../../services/feature-store.service';
 import { FeatureDTO } from '../../models/feature.model';
 
 @Component({
@@ -28,61 +29,56 @@ import { FeatureDTO } from '../../models/feature.model';
     ]),
   ],
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit, OnDestroy {
   features: FeatureDTO[] = [];
-  loading = false;
+  loading    = false;
   error: string | null = null;
   hasFetched = false;
   lastLoaded: Date | null = null;
   fetchCount = 0;
 
+  private subs = new Subscription();
+
   constructor(
-    private adoApiService: AdoApiService,
     private configService: ConfigService,
+    private featureStore: FeatureStoreService,
   ) {}
 
-  get summary() {
-    const f = this.features;
-    const totalStories   = f.reduce((s, x) => s + x.totalStories, 0);
-    const totalPoints    = f.reduce((s, x) => s + x.totalPoints, 0);
-    const doneCount      = f.reduce((s, x) => s + x.stateCounts.readyForProd + x.stateCounts.closed, 0);
-    const donePoints     = f.reduce((s, x) => s + x.donePoints, 0);
-    const inProgressCount = f.reduce((s, x) =>
-      s + x.stateCounts.inDevelopment + x.stateCounts.devComplete + x.stateCounts.readyForQA +
-          x.stateCounts.sprintReady + x.stateCounts.inRefinement + x.stateCounts.readyForRefine +
-          x.stateCounts.inAnalysis, 0);
-    const activePoints   = f.reduce((s, x) => s + x.activePoints, 0);
-    const blockedCount   = f.reduce((s, x) => s + x.stateCounts.blocked, 0);
-    const withStories    = f.filter(x => x.totalStories > 0).length;
-    const noStories      = f.length - withStories;
-    const donePct        = totalStories > 0 ? Math.round((doneCount / totalStories) * 100) : 0;
-    return { totalStories, totalPoints, doneCount, donePoints, inProgressCount,
-             activePoints, blockedCount, withStories, noStories, donePct,
-             totalFeatures: f.length };
+  ngOnInit(): void {
+    this.subs.add(this.featureStore.features$.subscribe(f  => { this.features   = f; }));
+    this.subs.add(this.featureStore.loading$.subscribe(l   => { this.loading     = l; }));
+    this.subs.add(this.featureStore.error$.subscribe(e     => { this.error       = e; }));
+    this.subs.add(this.featureStore.hasFetched$.subscribe(h => { this.hasFetched = h; }));
+    this.subs.add(this.featureStore.lastLoaded$.subscribe(d => { this.lastLoaded = d; }));
+  }
+
+  ngOnDestroy(): void {
+    this.subs.unsubscribe();
   }
 
   fetch(): void {
     const { areaPath, iterationPath } = this.configService.currentFilters;
     this.fetchCount++;
-    this.loading = true;
-    this.error = null;
-    this.features = [];
+    this.featureStore.fetch(areaPath, iterationPath, true);
+  }
 
-    this.adoApiService.getFeatures(areaPath, iterationPath).subscribe({
-      next: features => {
-        this.features = features.slice().sort((a, b) => b.totalStories - a.totalStories);
-        this.loading = false;
-        this.hasFetched = true;
-        this.lastLoaded = new Date();
-      },
-      error: err => {
-        this.error =
-          err?.error?.message ??
-          err?.message ??
-          'Failed to load features from Azure DevOps.';
-        this.loading = false;
-        this.hasFetched = true;
-      },
-    });
+  get summary() {
+    const f = this.features;
+    const totalStories    = f.reduce((s, x) => s + x.totalStories, 0);
+    const totalPoints     = f.reduce((s, x) => s + x.totalPoints, 0);
+    const doneCount       = f.reduce((s, x) => s + x.stateCounts.readyForProd + x.stateCounts.closed, 0);
+    const donePoints      = f.reduce((s, x) => s + x.donePoints, 0);
+    const inProgressCount = f.reduce((s, x) =>
+      s + x.stateCounts.inDevelopment + x.stateCounts.devComplete + x.stateCounts.readyForQA +
+          x.stateCounts.sprintReady + x.stateCounts.inRefinement + x.stateCounts.readyForRefine +
+          x.stateCounts.inAnalysis, 0);
+    const activePoints    = f.reduce((s, x) => s + x.activePoints, 0);
+    const blockedCount    = f.reduce((s, x) => s + x.stateCounts.blocked, 0);
+    const withStories     = f.filter(x => x.totalStories > 0).length;
+    const noStories       = f.length - withStories;
+    const donePct         = totalStories > 0 ? Math.round((doneCount / totalStories) * 100) : 0;
+    return { totalStories, totalPoints, doneCount, donePoints, inProgressCount,
+             activePoints, blockedCount, withStories, noStories, donePct,
+             totalFeatures: f.length };
   }
 }

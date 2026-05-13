@@ -1,0 +1,147 @@
+<div class="pi-root">
+
+  <!-- ── Top filter bar (always visible after first fetch) ─────────────── -->
+  <div class="pi-filter-bar" *ngIf="hasFetched && !loading">
+    <div class="pi-filter-bar-inner">
+      <mat-icon class="pi-bar-icon">view_timeline</mat-icon>
+      <span class="pi-bar-title">{{ piName || 'PI Dashboard' }}</span>
+
+      <form [formGroup]="filterForm" (ngSubmit)="fetch()" class="inline-filters">
+        <mat-form-field appearance="outline" class="bar-field">
+          <mat-label>Area Path</mat-label>
+          <mat-select formControlName="areaPath">
+            <mat-option *ngFor="let p of areaPaths" [value]="p">{{ p }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="bar-field">
+          <mat-label>Iteration Path</mat-label>
+          <mat-select formControlName="iterationPath">
+            <mat-option *ngFor="let p of iterationPaths" [value]="p">{{ p }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" type="submit" [disabled]="filterForm.invalid || loading">
+          <mat-icon>refresh</mat-icon> Refresh
+        </button>
+      </form>
+
+      <span class="pi-last-loaded" *ngIf="lastLoaded">
+        <mat-icon class="check-icon">check_circle</mat-icon>
+        {{ lastLoaded | date:'HH:mm:ss' }}
+      </span>
+    </div>
+  </div>
+
+  <!-- ── Filter / Idle setup card ──────────────────────────────────────── -->
+  <div class="setup-overlay" *ngIf="!hasFetched && !loading">
+    <div class="setup-card">
+      <mat-icon class="setup-icon">view_timeline</mat-icon>
+      <h2 class="setup-title">PI Planning Dashboard</h2>
+      <p class="setup-subtitle">Select your Area Path and PI to load the dashboard.</p>
+
+      <form [formGroup]="filterForm" (ngSubmit)="fetch()" class="setup-form">
+        <mat-form-field appearance="outline" class="setup-field">
+          <mat-label>Area Path</mat-label>
+          <mat-select formControlName="areaPath">
+            <mat-option *ngFor="let p of areaPaths" [value]="p">{{ p }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="setup-field">
+          <mat-label>Iteration Path</mat-label>
+          <mat-select formControlName="iterationPath">
+            <mat-option *ngFor="let p of iterationPaths" [value]="p">{{ p }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" type="submit"
+          [disabled]="filterForm.invalid || pathsLoading" class="setup-btn">
+          <mat-icon>rocket_launch</mat-icon>
+          Load PI Dashboard
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Loading ────────────────────────────────────────────────────────── -->
+  <div class="state-container" *ngIf="loading">
+    <mat-spinner diameter="56"></mat-spinner>
+    <p class="state-message">Fetching PI data from Azure DevOps&hellip;</p>
+  </div>
+
+  <!-- ── Error ─────────────────────────────────────────────────────────── -->
+  <div class="state-container error-state" *ngIf="hasFetched && !loading && error">
+    <mat-icon class="state-icon error-icon">error_outline</mat-icon>
+    <p class="state-message">{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="refresh()">
+      <mat-icon>refresh</mat-icon> Retry
+    </button>
+  </div>
+
+  <!-- ── Dashboard ─────────────────────────────────────────────────────── -->
+  <div class="pi-content" *ngIf="hasFetched && !loading && !error && piData">
+
+    <!-- Summary stat bar -->
+    <div class="summary-bar">
+      <div class="stat-card stat-purple">
+        <div class="stat-label">Features</div>
+        <div class="stat-value">{{ summary?.featuresWithStories }}<span class="stat-denom">/{{ summary?.totalFeatures }}</span></div>
+        <div class="stat-sub">with stories</div>
+      </div>
+      <div class="stat-card stat-blue">
+        <div class="stat-label">Total Stories</div>
+        <div class="stat-value">{{ summary?.totalStories }}</div>
+        <div class="stat-sub">across {{ summary?.totalSprints }} sprints</div>
+      </div>
+      <div class="stat-card stat-green">
+        <div class="stat-label">Done</div>
+        <div class="stat-value">{{ summary?.doneStories }}</div>
+        <div class="stat-sub">{{ summary?.completionPct }}% complete</div>
+      </div>
+      <div class="stat-card stat-teal">
+        <div class="stat-label">Story Points</div>
+        <div class="stat-value">{{ summary?.donePoints }}<span class="stat-denom">/{{ summary?.totalPoints }}</span></div>
+        <div class="stat-sub">{{ summary?.pointsPct }}% SP done</div>
+      </div>
+      <div class="stat-card" [ngClass]="(summary?.blockedStories ?? 0) > 0 ? 'stat-red' : 'stat-muted'">
+        <div class="stat-label">Blocked</div>
+        <div class="stat-value">{{ summary?.blockedStories }}</div>
+        <div class="stat-sub" [class.attention]="(summary?.blockedStories ?? 0) > 0">
+          {{ (summary?.blockedStories ?? 0) > 0 ? 'Needs attention' : 'All clear' }}
+        </div>
+      </div>
+      <div class="stat-card stat-orange">
+        <div class="stat-label">Sprints</div>
+        <div class="stat-value">{{ summary?.totalSprints }}</div>
+        <div class="stat-sub">in this PI</div>
+      </div>
+    </div>
+
+    <!-- Sprint grid -->
+    <div class="section-header">
+      <mat-icon>sprint</mat-icon>
+      <span>Sprint Overview</span>
+      <span class="section-count">{{ sprints.length }} sprints</span>
+    </div>
+    <div class="sprint-grid">
+      <app-sprint-card *ngFor="let s of sprints" [sprint]="s"></app-sprint-card>
+    </div>
+
+    <!-- Feature-Sprint table -->
+    <div class="section-header">
+      <mat-icon>table_chart</mat-icon>
+      <span>Feature × Sprint Matrix</span>
+      <span class="section-count">{{ features.length }} features</span>
+    </div>
+    <app-feature-sprint-table [features]="features" [sprints]="sprints"></app-feature-sprint-table>
+
+    <!-- Burnup chart -->
+    <div class="section-header" *ngIf="burnup.length > 0">
+      <mat-icon>trending_up</mat-icon>
+      <span>PI Burnup</span>
+    </div>
+    <app-pi-burnup *ngIf="burnup.length > 0" [burnup]="burnup"></app-pi-burnup>
+
+  </div>
+</div>

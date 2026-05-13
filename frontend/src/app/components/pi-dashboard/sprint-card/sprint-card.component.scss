@@ -1,0 +1,114 @@
+.sprint-card {
+  background: #1a1f2e;
+  border-radius: 10px;
+  border-top: 3px solid #546e7a;
+  padding: 14px 16px 12px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sprint-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.sprint-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #e0e0e0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.status-badge {
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.sprint-dates {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.68rem;
+  color: #8892a4;
+
+  .date-icon {
+    font-size: 13px;
+    height: 13px;
+    width: 13px;
+  }
+}
+
+.sprint-pct {
+  font-size: 2.2rem;
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+  padding: 4px 0;
+}
+
+.sprint-bar-wrap {
+  padding: 0 2px;
+}
+
+.sprint-bar {
+  display: flex;
+  height: 8px;
+  border-radius: 4px;
+  background: #2d3545;
+  overflow: hidden;
+}
+
+.bar-seg {
+  height: 100%;
+  transition: width 0.4s ease;
+
+  &.seg-done    { background: #00e676; }
+  &.seg-active  { background: #448aff; }
+  &.seg-blocked { background: #ff5252; }
+}
+
+.sprint-stats {
+  display: flex;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.sprint-stat {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+
+  .stat-icon {
+    font-size: 13px;
+    height: 13px;
+    width: 13px;
+    color: #8892a4;
+
+    &.blocked-icon { color: #ff5252; }
+  }
+
+  .stat-val {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #e0e0e0;
+
+    &.blocked-val { color: #ff5252; }
+  }
+
+  .stat-lbl {
+    font-size: 0.65rem;
+    color: #8892a4;
+  }
+}

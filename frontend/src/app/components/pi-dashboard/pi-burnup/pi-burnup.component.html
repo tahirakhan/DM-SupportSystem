@@ -1,0 +1,47 @@
+<div class="burnup-panel">
+  <svg [attr.viewBox]="'0 0 ' + W + ' ' + H" class="burnup-svg" preserveAspectRatio="xMidYMid meet">
+
+    <!-- Y grid lines and ticks -->
+    <g *ngFor="let t of yTicks">
+      <line [attr.x1]="PAD.left" [attr.x2]="W - PAD.right"
+            [attr.y1]="t.y" [attr.y2]="t.y"
+            class="grid-line"/>
+      <text [attr.x]="PAD.left - 6" [attr.y]="t.y + 4" class="axis-label y-label">{{ t.value }}</text>
+    </g>
+
+    <!-- Target line -->
+    <path [attr.d]="targetLine" class="target-path"/>
+
+    <!-- Actual area fill -->
+    <path [attr.d]="actualLine + ' V' + (H - PAD.bottom) + ' H' + PAD.left + ' Z'" class="actual-fill"/>
+
+    <!-- Actual line -->
+    <path [attr.d]="actualLine" class="actual-path"/>
+
+    <!-- Data points -->
+    <circle *ngFor="let p of actualPoints"
+            [attr.cx]="p.x" [attr.cy]="p.y" r="4"
+            class="data-dot">
+      <title>{{ p.label }}</title>
+    </circle>
+
+    <!-- X labels -->
+    <text *ngFor="let lbl of xLabels"
+          [attr.x]="lbl.x" [attr.y]="H - PAD.bottom + 18"
+          class="axis-label x-label">{{ lbl.label }}</text>
+
+    <!-- Axis lines -->
+    <line [attr.x1]="PAD.left" [attr.x2]="PAD.left"
+          [attr.y1]="PAD.top" [attr.y2]="H - PAD.bottom"
+          class="axis-line"/>
+    <line [attr.x1]="PAD.left" [attr.x2]="W - PAD.right"
+          [attr.y1]="H - PAD.bottom" [attr.y2]="H - PAD.bottom"
+          class="axis-line"/>
+  </svg>
+
+  <!-- Legend -->
+  <div class="burnup-legend">
+    <span class="legend-dot dot-actual"></span><span class="legend-lbl">Cumulative Done</span>
+    <span class="legend-dot dot-target"></span><span class="legend-lbl">Target (Total)</span>
+  </div>
+</div>

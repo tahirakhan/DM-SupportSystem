@@ -9,6 +9,9 @@ frontend/.angular/
 # Claude Code local settings
 .claude/
 
+# Local GitHub token (never commit)
+.github-token
+
 # Backend build output
 backend/dist/
 
