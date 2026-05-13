@@ -6,8 +6,13 @@ dist/
 # Angular build cache
 frontend/.angular/
 
-# Claude Code local settings
-.claude/
+# Claude Code — share commands/agents/sprints, keep personal files local
+.claude/settings.local.json
+.claude/state/
+.claude/cache/
+
+# Local GitHub token (never commit)
+.github-token
 
 # Backend build output
 backend/dist/
