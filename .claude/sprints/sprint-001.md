@@ -1,7 +1,7 @@
 ---
 sprint: 001
 slug: sprint-executive-update
-status: planned
+status: in-progress
 target_branch: develop
 created: 2026-05-14
 ---
@@ -37,12 +37,12 @@ created: 2026-05-14
 
 ## Work Items
 
-- [ ] WI-1: Backend types for sprint-update payload
+- [~] WI-1: Backend types for sprint-update payload
   - Files: `backend/src/models/sprint-update.model.ts` (new)
   - Acceptance: types compile; defines `SprintUpdateData`, `FeatureRow` (with `spInProgress`, `spRemaining`, `blockers[]`, `dependencies[]`), `WeekView` enum, `WeeklySummary` shape covering commitment / 50% target / qa-done count. No logic.
   - Depends on: (none)
 
-- [ ] WI-2: Extend ADO service — blockers, dependencies, and sprint-update fetch
+- [~] WI-2: Extend ADO service — blockers, dependencies, and sprint-update fetch
   - Files: `backend/src/services/ado.service.ts` (modify)
   - Acceptance:
     - Existing dashboards still work (no regression in `getPiData`, `getDashboardData`, etc.).
@@ -50,12 +50,12 @@ created: 2026-05-14
     - New method `getSprintUpdateData(areaPath, sprintIterationPath)` returns `SprintUpdateData` with: total committed SP, 50% target, week-1 done SP (states in [Ready for Prod, Closed, Done]), week-2 remaining SP, feature rows, sprint start/finish dates, computed week.
   - Depends on: WI-1
 
-- [ ] WI-3: Backend route `/api/sprint-update`
+- [~] WI-3: Backend route `/api/sprint-update`
   - Files: `backend/src/routes/sprint-update.route.ts` (new), `backend/src/routes/index.ts` (modify — register router)
   - Acceptance: `GET /api/sprint-update?areaPath=...&iterationPath=...` returns valid `SprintUpdateData` JSON. 400 on missing params; pass through service errors.
   - Depends on: WI-2
 
-- [ ] WI-4: Frontend types + API client + store
+- [~] WI-4: Frontend types + API client + store
   - Files:
     - `frontend/src/app/models/sprint-update.model.ts` (new, mirror of backend types)
     - `frontend/src/app/services/ado-api.service.ts` (modify — add `getSprintUpdate(areaPath, iterationPath)`)
@@ -63,7 +63,7 @@ created: 2026-05-14
   - Acceptance: store exposes `data$`, `loading$`, `error$`, `hasFetched$`, `lastLoaded$`, and `fetch(areaPath, iterationPath, force)` with same-filter guard.
   - Depends on: WI-3
 
-- [ ] WI-5: Sprint Executive Update dashboard component + wiring
+- [~] WI-5: Sprint Executive Update dashboard component + wiring
   - Files:
     - `frontend/src/app/components/sprint-update-dashboard/sprint-update-dashboard.component.{ts,html,scss}` (new)
     - `frontend/src/app/app.module.ts` (declare)
