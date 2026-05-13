@@ -27,8 +27,10 @@ export class SidebarComponent {
   @Output() toggleCollapsed = new EventEmitter<void>();
 
   navItems: NavItem[] = [
-    { label: 'Home', icon: 'home', route: '/home' },
-    { label: 'Feature Dashboard', icon: 'dashboard', route: '/features' },
+    { label: 'Home',              icon: 'home',           route: '/home' },
+    { label: 'Feature Dashboard', icon: 'dashboard',      route: '/features' },
+    { label: 'Release Dashboard', icon: 'rocket_launch',  route: '/release' },
+    { label: 'PI Dashboard',      icon: 'view_timeline',  route: '/pi' },
   ];
 
   constructor(private router: Router) {}

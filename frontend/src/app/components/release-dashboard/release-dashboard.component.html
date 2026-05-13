@@ -1,0 +1,187 @@
+<app-filters-bar [loading]="loading" (fetchRequested)="fetch()"></app-filters-bar>
+
+<div class="release-content">
+
+  <!-- Pre-fetch idle -->
+  <div class="state-container" *ngIf="!loading && !hasFetched">
+    <mat-icon class="state-icon idle-icon">rocket_launch</mat-icon>
+    <p class="state-message">Select filters above and click <strong>Fetch Details</strong> to build the release dashboard.</p>
+  </div>
+
+  <!-- Loading -->
+  <div class="state-container" *ngIf="loading">
+    <mat-spinner diameter="56"></mat-spinner>
+    <p class="state-message">Loading release data from Azure DevOps&hellip;</p>
+  </div>
+
+  <!-- Error -->
+  <div class="state-container error-state" *ngIf="hasFetched && !loading && error">
+    <mat-icon class="state-icon error-icon">error_outline</mat-icon>
+    <p class="state-message">{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="fetch()">
+      <mat-icon>refresh</mat-icon> Retry
+    </button>
+  </div>
+
+  <!-- Dashboard content -->
+  <ng-container *ngIf="hasFetched && !loading && !error">
+
+    <!-- ── Summary stat cards ──────────────────────────────── -->
+    <div class="summary-bar">
+      <div class="stat-card stat-purple">
+        <div class="stat-label">Features</div>
+        <div class="stat-value">{{ summary.withStories }}<span class="stat-denom">/{{ summary.totalFeatures }}</span></div>
+        <div class="stat-sub">{{ summary.totalFeatures - summary.withStories }} have no stories</div>
+      </div>
+      <div class="stat-card stat-blue">
+        <div class="stat-label">Total Stories</div>
+        <div class="stat-value">{{ summary.totalStories }}</div>
+        <div class="stat-sub">Across {{ summary.totalFeatures }} features</div>
+      </div>
+      <div class="stat-card stat-green">
+        <div class="stat-label">Done</div>
+        <div class="stat-value">{{ summary.doneCount }}</div>
+        <div class="stat-sub">{{ summary.donePct }}% of stories complete</div>
+      </div>
+      <div class="stat-card stat-teal">
+        <div class="stat-label">Story Points</div>
+        <div class="stat-value">{{ summary.donePoints }}<span class="stat-denom">/{{ summary.totalPoints }}</span></div>
+        <div class="stat-sub">{{ summary.ptsPct }}% SP complete</div>
+      </div>
+      <div class="stat-card" [ngClass]="summary.blockedCount > 0 ? 'stat-red' : 'stat-muted'">
+        <div class="stat-label">Blocked</div>
+        <div class="stat-value">{{ summary.blockedCount }}</div>
+        <div class="stat-sub" [class.attention]="summary.blockedCount > 0">
+          {{ summary.blockedCount > 0 ? 'Needs attention' : 'All clear' }}
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Main two-column layout ─────────────────────────── -->
+    <div class="main-grid">
+
+      <!-- Feature progress table -->
+      <div class="panel table-panel">
+        <div class="panel-header">
+          <mat-icon class="panel-icon">table_chart</mat-icon>
+          <span>Feature Progress</span>
+          <span class="panel-count">{{ features.length }}</span>
+        </div>
+        <div class="table-wrap">
+          <table class="feature-table">
+            <thead>
+              <tr>
+                <th class="col-feature">Feature</th>
+                <th class="col-size">Size</th>
+                <th class="col-state">State</th>
+                <th class="col-stories">Stories</th>
+                <th class="col-done">Done</th>
+                <th class="col-pct">Progress</th>
+                <th class="col-blocked">Blocked</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let f of features" [class.row-blocked]="blockedCount(f) > 0">
+                <td class="col-feature">
+                  <a [href]="f.adoUrl" target="_blank" rel="noopener" class="feature-link"
+                     [matTooltip]="f.title">{{ f.title }}</a>
+                </td>
+                <td class="col-size">
+                  <span class="tshirt-badge" *ngIf="f.tshirtSize">{{ f.tshirtSize }}</span>
+                  <span class="na-text" *ngIf="!f.tshirtSize">—</span>
+                </td>
+                <td class="col-state">
+                  <span class="state-badge" [ngClass]="featureStateClass(f)">{{ f.state }}</span>
+                </td>
+                <td class="col-stories text-center">{{ f.totalStories }}</td>
+                <td class="col-done text-center">{{ doneCount(f) }}</td>
+                <td class="col-pct">
+                  <div class="table-pct-row">
+                    <div class="table-bar-wrap">
+                      <div class="table-bar-fill" [style.width.%]="f.percentComplete"
+                           [ngClass]="pctClass(f)"></div>
+                    </div>
+                    <span class="table-pct-label" [ngClass]="pctClass(f)">{{ f.percentComplete }}%</span>
+                  </div>
+                </td>
+                <td class="col-blocked text-center">
+                  <span class="blocked-badge" *ngIf="blockedCount(f) > 0">{{ blockedCount(f) }}</span>
+                  <span class="na-text" *ngIf="blockedCount(f) === 0">—</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Release readiness -->
+      <div class="panel readiness-panel">
+        <div class="panel-header">
+          <mat-icon class="panel-icon">rocket_launch</mat-icon>
+          <span>Release Readiness</span>
+        </div>
+
+        <div class="readiness-groups">
+          <div class="readiness-group" *ngFor="let grp of readinessGroups">
+            <div class="group-header">
+              <mat-icon [style.color]="grp.iconColor">{{ grp.icon }}</mat-icon>
+              <span class="group-label">{{ grp.label }}</span>
+              <span class="group-count">{{ grp.features.length }}</span>
+            </div>
+            <div class="group-items" *ngIf="grp.features.length > 0">
+              <div class="group-item" *ngFor="let f of grp.features">
+                <a [href]="f.adoUrl" target="_blank" rel="noopener" class="item-link"
+                   [matTooltip]="f.title">{{ f.title }}</a>
+                <span class="item-pct" [ngClass]="pctClass(f)" *ngIf="f.totalStories > 0">
+                  {{ f.percentComplete }}%
+                </span>
+                <span class="item-blocked" *ngIf="blockedCount(f) > 0" matTooltip="Blocked stories">
+                  <mat-icon class="tiny-icon">block</mat-icon>{{ blockedCount(f) }}
+                </span>
+              </div>
+            </div>
+            <div class="group-empty" *ngIf="grp.features.length === 0">
+              <span>None</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── State distribution bar ─────────────────────────── -->
+    <div class="panel dist-panel" *ngIf="stateDistribution.length > 0">
+      <div class="panel-header">
+        <mat-icon class="panel-icon">bar_chart</mat-icon>
+        <span>Story State Distribution</span>
+        <span class="panel-count">{{ summary.totalStories }} total</span>
+      </div>
+
+      <div class="dist-bar">
+        <div
+          *ngFor="let s of stateDistribution"
+          class="dist-seg"
+          [style.width.%]="s.pct"
+          [style.background-color]="s.color"
+          [matTooltip]="s.label + ': ' + s.count + ' (' + s.pct + '%)'"
+          matTooltipPosition="above"
+        >
+          <span *ngIf="s.pct >= 7" class="dist-seg-label">{{ s.count }}</span>
+        </div>
+      </div>
+
+      <div class="dist-legend">
+        <ng-container *ngFor="let s of stateDistribution">
+          <span class="dist-dot" [style.background-color]="s.color"></span>
+          <span class="dist-text">{{ s.label }} ({{ s.count }})</span>
+        </ng-container>
+      </div>
+    </div>
+
+    <!-- Last loaded -->
+    <div class="last-loaded-row" *ngIf="lastLoaded">
+      <mat-icon class="check-icon">check_circle</mat-icon>
+      Loaded at {{ lastLoaded | date:'HH:mm:ss' }}
+    </div>
+
+  </ng-container>
+</div>

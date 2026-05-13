@@ -22,6 +22,15 @@ iterationsRouter.get('/iterations', async (_req: Request, res: Response, next: N
   }
 });
 
+iterationsRouter.get('/pi-iterations', async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const paths = await adoService.getPiIterationPaths();
+    res.json(paths);
+  } catch (err) {
+    next(err);
+  }
+});
+
 iterationsRouter.get('/config', (_req: Request, res: Response, next: NextFunction) => {
   try {
     const config = loadConfig();

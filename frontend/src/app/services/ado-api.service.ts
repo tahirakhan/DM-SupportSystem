@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { FeatureDTO } from '../models/feature.model';
+import { PiData } from '../models/pi.model';
 
 @Injectable({ providedIn: 'root' })
 export class AdoApiService {
@@ -21,7 +22,18 @@ export class AdoApiService {
     return this.http.get<string[]>(`${this.base}/iterations`);
   }
 
+  getPiIterationPaths(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.base}/pi-iterations`);
+  }
+
   getAreaPaths(): Observable<string[]> {
     return this.http.get<string[]>(`${this.base}/areas`);
+  }
+
+  getPiData(areaPath: string, iterationPath: string): Observable<PiData> {
+    const params = new HttpParams()
+      .set('areaPath', areaPath)
+      .set('iterationPath', iterationPath);
+    return this.http.get<PiData>(`${this.base}/pi`, { params });
   }
 }

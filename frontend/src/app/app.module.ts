@@ -25,9 +25,14 @@ import { AppComponent } from './app.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { HomeComponent } from './components/home/home.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { ReleaseDashboardComponent } from './components/release-dashboard/release-dashboard.component';
 import { FiltersBarComponent } from './components/filters-bar/filters-bar.component';
 import { FeatureCardComponent } from './components/feature-card/feature-card.component';
 import { ProgressRingComponent } from './components/progress-ring/progress-ring.component';
+import { PiDashboardComponent } from './components/pi-dashboard/pi-dashboard.component';
+import { SprintCardComponent } from './components/pi-dashboard/sprint-card/sprint-card.component';
+import { FeatureSprintTableComponent } from './components/pi-dashboard/feature-sprint-table/feature-sprint-table.component';
+import { PiBurnupComponent } from './components/pi-dashboard/pi-burnup/pi-burnup.component';
 
 @NgModule({
   declarations: [
@@ -35,9 +40,14 @@ import { ProgressRingComponent } from './components/progress-ring/progress-ring.
     SidebarComponent,
     HomeComponent,
     DashboardComponent,
+    ReleaseDashboardComponent,
     FiltersBarComponent,
     FeatureCardComponent,
     ProgressRingComponent,
+    PiDashboardComponent,
+    SprintCardComponent,
+    FeatureSprintTableComponent,
+    PiBurnupComponent,
   ],
   imports: [
     BrowserModule,

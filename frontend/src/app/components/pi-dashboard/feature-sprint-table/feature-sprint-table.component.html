@@ -1,0 +1,57 @@
+<div class="table-panel">
+  <div class="table-wrap">
+    <table class="matrix-table">
+      <thead>
+        <tr>
+          <th class="col-feature">Feature</th>
+          <th class="col-size">Size</th>
+          <th class="col-state">State</th>
+          <th *ngFor="let s of sprints" class="col-sprint" [matTooltip]="s.path">
+            {{ s.name }}
+          </th>
+          <th class="col-total">Total</th>
+          <th class="col-pct">%</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let f of features">
+          <td class="col-feature">
+            <a [href]="f.featureAdoUrl" target="_blank" rel="noopener" class="feature-link"
+               [matTooltip]="f.featureTitle">{{ f.featureTitle }}</a>
+          </td>
+          <td class="col-size">
+            <span class="tshirt-badge" *ngIf="f.tshirtSize">{{ f.tshirtSize }}</span>
+            <span class="na-text" *ngIf="!f.tshirtSize">—</span>
+          </td>
+          <td class="col-state">
+            <span class="state-badge" [ngClass]="featureStateClass(f.featureState)">{{ f.featureState }}</span>
+          </td>
+          <td *ngFor="let s of sprints" class="col-sprint cell-td" [ngClass]="cellClass(getCell(f, s))">
+            <ng-container *ngIf="getCell(f, s).total > 0">
+              <span class="cell-done-count">{{ getCell(f, s).done }}</span>
+              <span class="cell-total-count">/{{ getCell(f, s).total }}</span>
+            </ng-container>
+            <span class="na-text" *ngIf="getCell(f, s).total === 0">—</span>
+          </td>
+          <td class="col-total text-center">
+            <span class="total-val">{{ f.doneStories }}/{{ f.totalStories }}</span>
+          </td>
+          <td class="col-pct">
+            <div class="pct-row">
+              <div class="pct-bar-wrap">
+                <div class="pct-bar-fill" [style.width.%]="f.percentComplete"
+                     [ngClass]="pctClass(f.percentComplete)"></div>
+              </div>
+              <span class="pct-label" [ngClass]="pctClass(f.percentComplete)">{{ f.percentComplete }}%</span>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="features.length === 0">
+          <td [attr.colspan]="3 + sprints.length + 2" class="empty-row">
+            No features found for this PI.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
