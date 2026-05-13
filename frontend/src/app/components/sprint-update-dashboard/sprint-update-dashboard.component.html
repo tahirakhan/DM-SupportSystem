@@ -1,0 +1,294 @@
+<div class="sprint-update-container">
+
+  <!-- Setup Overlay -->
+  <div class="setup-overlay" *ngIf="!hasFetched && !loading">
+    <mat-card class="setup-card">
+      <mat-card-header>
+        <mat-icon class="setup-icon">summarize</mat-icon>
+      </mat-card-header>
+      <mat-card-title>Sprint Executive Update</mat-card-title>
+      <mat-card-subtitle>Track weekly progress and execution metrics</mat-card-subtitle>
+      <mat-card-content>
+        <form [formGroup]="filterForm" class="setup-form">
+          <mat-form-field class="setup-field">
+            <mat-label>Area Path</mat-label>
+            <mat-select formControlName="areaPath">
+              <mat-option *ngFor="let path of areaPaths" [value]="path">
+                {{ path }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field class="setup-field">
+            <mat-label>Sprint Iteration Path</mat-label>
+            <mat-select formControlName="iterationPath">
+              <mat-option *ngFor="let path of iterationPaths" [value]="path">
+                {{ path }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </form>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="loadSprintUpdate()"
+          [disabled]="filterForm.invalid"
+        >
+          <mat-icon>play_arrow</mat-icon> Load Sprint Update
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <!-- Sticky Filter Bar -->
+  <div class="sticky-filter-bar" *ngIf="hasFetched && !loading">
+    <div class="filter-bar-content">
+      <div class="sprint-info">
+        <h2 class="sprint-name">{{ data?.sprintName || 'Sprint Update' }}</h2>
+        <span class="sprint-path">{{ data?.iterationPath }}</span>
+      </div>
+      <div class="filter-actions">
+        <button mat-icon-button (click)="refreshSprintUpdate()" [disabled]="loading" title="Refresh">
+          <mat-icon>refresh</mat-icon>
+        </button>
+        <span class="last-loaded" *ngIf="lastLoaded">
+          Loaded at {{ lastLoaded }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="state-container" *ngIf="loading">
+    <mat-spinner diameter="56"></mat-spinner>
+    <p class="state-message">Loading sprint update...</p>
+  </div>
+
+  <!-- Error State -->
+  <div class="state-container error-state" *ngIf="hasFetched && !loading && error">
+    <mat-icon class="state-icon error-icon">error_outline</mat-icon>
+    <p class="state-message">{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="refreshSprintUpdate()">
+      <mat-icon>refresh</mat-icon> Retry
+    </button>
+  </div>
+
+  <!-- Content -->
+  <div class="dashboard-content" *ngIf="hasFetched && !loading && !error && data">
+
+    <!-- Top Stat Bar -->
+    <div class="summary-bar">
+      <div class="stat-card stat-purple">
+        <div class="stat-label">Total Commitment</div>
+        <div class="stat-value">{{ data.commitmentSp }} SP</div>
+      </div>
+      <div class="stat-card stat-blue">
+        <div class="stat-label">Week 1 Target (50%)</div>
+        <div class="stat-value">{{ data.targetWeek1Sp }} SP</div>
+      </div>
+      <div class="stat-card stat-green">
+        <div class="stat-label">QA Done</div>
+        <div class="stat-value">{{ data.qaDoneSp }} SP</div>
+        <div class="stat-sub">({{ data.week1.qaDonePct }}%)</div>
+      </div>
+      <div class="stat-card stat-teal">
+        <div class="stat-label">Remaining</div>
+        <div class="stat-value">{{ data.remainingSp }} SP</div>
+      </div>
+    </div>
+
+    <!-- Tab Group -->
+    <mat-tab-group
+      [selectedIndex]="getSelectedTabIndex()"
+      (selectedIndexChange)="onTabChange($event)"
+      class="sprint-tabs"
+    >
+      <!-- Week 1 Tab -->
+      <mat-tab label="Week 1 — Planning Target">
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">calendar_today</mat-icon>
+          <span>Week 1 — Planning Target</span>
+        </ng-template>
+        <div class="tab-content">
+          <div class="summary-line">
+            Commitment: {{ data.week1.commitmentSp }} SP · Target (50%): {{ data.week1.targetSp }} SP · Done in QA: {{ data.week1.qaDoneSp }} SP ({{ data.week1.qaDonePct }}%)
+          </div>
+          <div class="features-table-wrapper">
+            <table class="features-table">
+              <thead>
+                <tr>
+                  <th>Feature</th>
+                  <th class="align-right">Size</th>
+                  <th>State</th>
+                  <th class="align-right">SP In Progress</th>
+                  <th class="align-right">SP Remaining</th>
+                  <th class="align-right">SP Done (QA)</th>
+                  <th>Blockers</th>
+                  <th>Dependencies</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let feature of week1Features" class="feature-row">
+                  <td class="feature-title">
+                    <a [href]="feature.featureAdoUrl" target="_blank">{{ feature.featureTitle }}</a>
+                  </td>
+                  <td class="align-right">{{ feature.tshirtSize }}</td>
+                  <td>{{ feature.featureState }}</td>
+                  <td class="align-right">{{ feature.spInProgress }}</td>
+                  <td class="align-right">{{ feature.spRemaining }}</td>
+                  <td class="align-right">{{ feature.spDoneQa }}</td>
+                  <td>
+                    <mat-chip-set *ngIf="feature.blockers.length > 0">
+                      <mat-chip *ngFor="let blocker of feature.blockers">
+                        {{ blocker.reason }}
+                      </mat-chip>
+                    </mat-chip-set>
+                    <span *ngIf="feature.blockers.length === 0" class="no-data">—</span>
+                  </td>
+                  <td>
+                    <span *ngIf="feature.dependencies.length > 0">
+                      {{ feature.dependencies.map(d => '#' + d.id + ' ' + d.title).join(', ') }}
+                    </span>
+                    <span *ngIf="feature.dependencies.length === 0" class="no-data">—</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- Week 2 Tab -->
+      <mat-tab label="Week 2 — Mid-Sprint Update">
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">calendar_today</mat-icon>
+          <span>Week 2 — Mid-Sprint Update</span>
+        </ng-template>
+        <div class="tab-content">
+          <mat-card class="recap-card">
+            <mat-card-content>
+              <div class="recap-title">Week 1 Commitment Recap</div>
+              <div class="recap-line">
+                Target: {{ data.week1.targetSp }} SP | Achieved: {{ data.week1.qaDoneSp }} SP ({{ data.week1.qaDonePct }}%)
+              </div>
+            </mat-card-content>
+          </mat-card>
+          <div class="summary-line" style="margin-top: 20px;">
+            Week 2 Focus: {{ data.week2.commitmentSp }} SP · Target: {{ data.week2.targetSp }} SP · Done in QA: {{ data.week2.qaDoneSp }} SP ({{ data.week2.qaDonePct }}%)
+          </div>
+          <div class="features-table-wrapper">
+            <table class="features-table">
+              <thead>
+                <tr>
+                  <th>Feature</th>
+                  <th class="align-right">Size</th>
+                  <th>State</th>
+                  <th class="align-right">SP In Progress</th>
+                  <th class="align-right">SP Remaining</th>
+                  <th class="align-right">SP Done (QA)</th>
+                  <th>Blockers</th>
+                  <th>Dependencies</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let feature of week2Features" class="feature-row">
+                  <td class="feature-title">
+                    <a [href]="feature.featureAdoUrl" target="_blank">{{ feature.featureTitle }}</a>
+                  </td>
+                  <td class="align-right">{{ feature.tshirtSize }}</td>
+                  <td>{{ feature.featureState }}</td>
+                  <td class="align-right">{{ feature.spInProgress }}</td>
+                  <td class="align-right">{{ feature.spRemaining }}</td>
+                  <td class="align-right">{{ feature.spDoneQa }}</td>
+                  <td>
+                    <mat-chip-set *ngIf="feature.blockers.length > 0">
+                      <mat-chip *ngFor="let blocker of feature.blockers">
+                        {{ blocker.reason }}
+                      </mat-chip>
+                    </mat-chip-set>
+                    <span *ngIf="feature.blockers.length === 0" class="no-data">—</span>
+                  </td>
+                  <td>
+                    <span *ngIf="feature.dependencies.length > 0">
+                      {{ feature.dependencies.map(d => '#' + d.id + ' ' + d.title).join(', ') }}
+                    </span>
+                    <span *ngIf="feature.dependencies.length === 0" class="no-data">—</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- Post-Sprint Tab -->
+      <mat-tab label="Post-Sprint — Closeout">
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">done_all</mat-icon>
+          <span>Post-Sprint — Closeout</span>
+        </ng-template>
+        <div class="tab-content">
+          <mat-card class="summary-card">
+            <mat-card-content>
+              <div class="post-sprint-metric">
+                <span class="metric-label">Total Delivered</span>
+                <span class="metric-value">{{ data.postSprint.deliveredSp }} / {{ data.postSprint.totalCommittedSp }} SP ({{ data.postSprint.completionPct }}%)</span>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <div class="carryover-section" *ngIf="carryoverFeatures.length > 0">
+            <h3 class="section-title">Carryover Items</h3>
+            <div class="features-table-wrapper">
+              <table class="features-table">
+                <thead>
+                  <tr>
+                    <th>Feature</th>
+                    <th class="align-right">Size</th>
+                    <th>State</th>
+                    <th class="align-right">SP Total</th>
+                    <th class="align-right">SP Remaining</th>
+                    <th>Blockers</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let feature of carryoverFeatures" class="feature-row">
+                    <td class="feature-title">
+                      <a [href]="feature.featureAdoUrl" target="_blank">{{ feature.featureTitle }}</a>
+                    </td>
+                    <td class="align-right">{{ feature.tshirtSize }}</td>
+                    <td>{{ feature.featureState }}</td>
+                    <td class="align-right">{{ feature.spTotal }}</td>
+                    <td class="align-right">{{ feature.spRemaining }}</td>
+                    <td>
+                      <mat-chip-set *ngIf="feature.blockers.length > 0">
+                        <mat-chip *ngFor="let blocker of feature.blockers">
+                          {{ blocker.reason }}
+                        </mat-chip>
+                      </mat-chip-set>
+                      <span *ngIf="feature.blockers.length === 0" class="no-data">—</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="summary-metrics">
+            <div class="metric-card">
+              <div class="metric-label">Total Blockers</div>
+              <div class="metric-value">{{ data.postSprint.blockerSummary }}</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Total Dependencies</div>
+              <div class="metric-value">{{ data.postSprint.dependencySummary }}</div>
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+
+  </div>
+
+</div>

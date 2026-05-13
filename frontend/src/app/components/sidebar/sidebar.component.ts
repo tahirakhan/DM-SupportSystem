@@ -29,6 +29,7 @@ export class SidebarComponent {
   navItems: NavItem[] = [
     { label: 'Home', icon: 'home', route: '/home' },
     { label: 'Feature Dashboard', icon: 'dashboard', route: '/features' },
+    { label: 'Sprint Update', icon: 'summarize', route: '/sprint-update' },
   ];
 
   constructor(private router: Router) {}

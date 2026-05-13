@@ -93,3 +93,14 @@ created: 2026-05-14
 - **Sprint length**: logic assumes ~2-week sprints. If a sprint is 3+ weeks, days 14+ stay on Week 2 view until `finishDate`, then Post-Sprint. Document this in the component.
 - **Capacity API**: explicitly deferred for v1. If executives later need hours-based capacity targets, that's a follow-up sprint adding `/work/teamsettings/iterations/{id}/capacities` integration.
 - **State name strings**: the "past-QA" filter hardcodes `Ready for Prod`, `Closed`, `Done`. If the team's process template uses different state names, surface those in a config or constant — don't scatter them.
+
+## Security debt — tracked for follow-up sprint
+
+The security review on 2026-05-14 flagged a HIGH-severity **WIQL injection** in `queryFeatureIds` ([backend/src/services/ado.service.ts:442-449](../../backend/src/services/ado.service.ts#L442-L449)) — `areaPath` and `iterationPath` are interpolated into the WIQL query with no escaping. The vulnerability is **pre-existing** (also affects `/api/features`, `/api/pi`, `/api/dashboard` — every endpoint that takes those filters). Sprint-001 inherits it via `getSprintUpdateData`, which calls the same `queryFeatureIds`.
+
+User decision (2026-05-14): track as follow-up sprint rather than fix in this sprint.
+
+**Follow-up sprint scope** when created:
+- Add a `sanitizeWiqlString` helper (escape single-quote → `''`, reject embedded newlines)
+- Apply to every user-input string interpolated into WIQL queries in `ado.service.ts`
+- Review `error.middleware.ts` for the medium-severity error-detail leakage

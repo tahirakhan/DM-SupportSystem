@@ -1,0 +1,483 @@
+.sprint-update-container {
+  position: relative;
+  min-height: 100vh;
+  background: #0f1419;
+}
+
+/* ─── Setup Overlay ───────────────────────────────────────── */
+
+.setup-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  min-height: 100vh;
+}
+
+.setup-card {
+  background: #1a1f2e;
+  border: 1px solid #2a3142;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 480px;
+  padding: 32px;
+
+  mat-card-header {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+
+    .setup-icon {
+      font-size: 48px;
+      height: 48px;
+      width: 48px;
+      color: #448aff;
+    }
+  }
+
+  mat-card-title {
+    text-align: center;
+    color: #fff;
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+  }
+
+  mat-card-subtitle {
+    text-align: center;
+    color: #8892a4;
+    margin-bottom: 24px;
+  }
+
+  mat-card-content {
+    margin: 0;
+  }
+
+  mat-card-actions {
+    margin-top: 24px;
+  }
+}
+
+.setup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.setup-field {
+  width: 100%;
+
+  ::ng-deep {
+    .mdc-text-field--filled {
+      background-color: #252d3d;
+    }
+
+    .mdc-floating-label {
+      color: #8892a4;
+    }
+
+    .mat-mdc-form-field-label {
+      color: #8892a4;
+    }
+  }
+}
+
+/* ─── Sticky Filter Bar ───────────────────────────────────── */
+
+.sticky-filter-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #1a1f2e;
+  border-bottom: 1px solid #2a3142;
+  padding: 16px 24px;
+  backdrop-filter: blur(8px);
+}
+
+.filter-bar-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.sprint-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .sprint-name {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .sprint-path {
+    font-size: 0.85rem;
+    color: #8892a4;
+  }
+}
+
+.filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .last-loaded {
+    font-size: 0.78rem;
+    color: #388e3c;
+    white-space: nowrap;
+  }
+}
+
+/* ─── States ───────────────────────────────────────────────── */
+
+.state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  gap: 16px;
+  min-height: calc(100vh - 100px);
+
+  .state-icon {
+    font-size: 56px;
+    height: 56px;
+    width: 56px;
+  }
+
+  .state-message {
+    font-size: 1rem;
+    color: #8892a4;
+    margin: 0;
+    text-align: center;
+  }
+}
+
+.error-state .error-icon {
+  color: #ff5252;
+}
+
+/* ─── Dashboard Content ───────────────────────────────────── */
+
+.dashboard-content {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ─── Summary Bar ───────────────────────────────────────────── */
+
+.summary-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+
+  @media (max-width: 1000px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stat-card {
+  background: #1a1f2e;
+  border-radius: 10px;
+  padding: 14px 16px 12px;
+  border-top: 3px solid transparent;
+  color: #fff;
+
+  .stat-label {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #8892a4;
+    margin-bottom: 6px;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 5px;
+
+    .stat-denom {
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #8892a4;
+    }
+  }
+
+  .stat-sub {
+    font-size: 0.7rem;
+    color: #8892a4;
+  }
+
+  &.stat-purple {
+    border-top-color: #7c4dff;
+  }
+
+  &.stat-blue {
+    border-top-color: #448aff;
+  }
+
+  &.stat-green {
+    border-top-color: #00e676;
+  }
+
+  &.stat-teal {
+    border-top-color: #1de9b6;
+  }
+}
+
+/* ─── Tab Group ───────────────────────────────────────────── */
+
+.sprint-tabs {
+  ::ng-deep {
+    .mdc-tab-indicator__content--underline {
+      border-color: #448aff;
+    }
+
+    .mat-mdc-tab-labels {
+      background: #1a1f2e;
+      border-bottom: 1px solid #2a3142;
+    }
+
+    .mat-mdc-tab {
+      color: #8892a4;
+
+      &.mat-mdc-tab-active {
+        color: #fff;
+      }
+    }
+
+    .mdc-text-field--filled {
+      background-color: #252d3d;
+    }
+  }
+}
+
+.tab-content {
+  padding: 24px 0;
+}
+
+.tab-icon {
+  margin-right: 8px;
+  font-size: 20px;
+  height: 20px;
+  width: 20px;
+}
+
+/* ─── Summary Line ───────────────────────────────────────── */
+
+.summary-line {
+  background: #252d3d;
+  border-left: 3px solid #448aff;
+  padding: 12px 16px;
+  border-radius: 6px;
+  color: #e0e0e0;
+  font-size: 0.95rem;
+  margin-bottom: 20px;
+}
+
+/* ─── Features Table ───────────────────────────────────────── */
+
+.features-table-wrapper {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #2a3142;
+}
+
+.features-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #1a1f2e;
+
+  thead {
+    background: #252d3d;
+    border-bottom: 2px solid #2a3142;
+
+    th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #8892a4;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+
+      &.align-right {
+        text-align: right;
+      }
+    }
+  }
+
+  tbody {
+    tr:border-bottom {
+      border-bottom: 1px solid #2a3142;
+    }
+  }
+
+  .feature-row {
+    border-bottom: 1px solid #2a3142;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background: #252d3d;
+    }
+
+    td {
+      padding: 12px 16px;
+      color: #e0e0e0;
+      font-size: 0.9rem;
+
+      &.align-right {
+        text-align: right;
+      }
+
+      &.feature-title {
+        font-weight: 500;
+
+        a {
+          color: #448aff;
+          text-decoration: none;
+
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
+
+      .no-data {
+        color: #616161;
+      }
+
+      mat-chip-set {
+        ::ng-deep {
+          .mdc-evolution-chip {
+            background: #3d4555;
+            color: #fff;
+            font-size: 0.8rem;
+
+            .mdc-evolution-chip__action {
+              color: #fff;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/* ─── Recap Card ───────────────────────────────────────────── */
+
+.recap-card {
+  background: #1a1f2e;
+  border: 1px solid #2a3142;
+  border-left: 3px solid #ffc107;
+
+  mat-card-content {
+    padding: 16px;
+  }
+
+  .recap-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #ffc107;
+    margin-bottom: 8px;
+  }
+
+  .recap-line {
+    color: #e0e0e0;
+    font-size: 0.95rem;
+  }
+}
+
+/* ─── Summary Card ───────────────────────────────────────── */
+
+.summary-card {
+  background: #1a1f2e;
+  border: 1px solid #2a3142;
+  border-left: 3px solid #00e676;
+  margin-bottom: 24px;
+
+  mat-card-content {
+    padding: 20px;
+  }
+
+  .post-sprint-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .metric-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: #8892a4;
+    }
+
+    .metric-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #fff;
+    }
+  }
+}
+
+/* ─── Carryover Section ────────────────────────────────────── */
+
+.carryover-section {
+  margin-bottom: 32px;
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 16px;
+  margin-top: 0;
+}
+
+/* ─── Summary Metrics ──────────────────────────────────────── */
+
+.summary-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-top: 24px;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.metric-card {
+  background: #1a1f2e;
+  border: 1px solid #2a3142;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+
+  .metric-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #8892a4;
+    margin-bottom: 8px;
+  }
+
+  .metric-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #fff;
+  }
+}

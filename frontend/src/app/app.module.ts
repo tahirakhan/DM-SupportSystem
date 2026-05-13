@@ -17,6 +17,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatRippleModule } from '@angular/material/core';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatTabsModule } from '@angular/material/tabs';
 
 import { AppRoutingModule } from './app-routing.module';
 import { ConfigService } from './services/config.service';
@@ -28,6 +29,7 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { FiltersBarComponent } from './components/filters-bar/filters-bar.component';
 import { FeatureCardComponent } from './components/feature-card/feature-card.component';
 import { ProgressRingComponent } from './components/progress-ring/progress-ring.component';
+import { SprintUpdateDashboardComponent } from './components/sprint-update-dashboard/sprint-update-dashboard.component';
 
 @NgModule({
   declarations: [
@@ -38,6 +40,7 @@ import { ProgressRingComponent } from './components/progress-ring/progress-ring.
     FiltersBarComponent,
     FeatureCardComponent,
     ProgressRingComponent,
+    SprintUpdateDashboardComponent,
   ],
   imports: [
     BrowserModule,
@@ -58,6 +61,7 @@ import { ProgressRingComponent } from './components/progress-ring/progress-ring.
     MatTooltipModule,
     MatRippleModule,
     MatDividerModule,
+    MatTabsModule,
   ],
   providers: [
     {

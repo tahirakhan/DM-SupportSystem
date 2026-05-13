@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { FeatureDTO } from '../models/feature.model';
+import { SprintUpdateData } from '../models/sprint-update.model';
 
 @Injectable({ providedIn: 'root' })
 export class AdoApiService {
@@ -23,5 +24,12 @@ export class AdoApiService {
 
   getAreaPaths(): Observable<string[]> {
     return this.http.get<string[]>(`${this.base}/areas`);
+  }
+
+  getSprintUpdate(areaPath: string, iterationPath: string): Observable<SprintUpdateData> {
+    const params = new HttpParams()
+      .set('areaPath', areaPath)
+      .set('iterationPath', iterationPath);
+    return this.http.get<SprintUpdateData>(`${this.base}/sprint-update`, { params });
   }
 }
