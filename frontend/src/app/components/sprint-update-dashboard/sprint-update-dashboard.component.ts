@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AdoApiService } from '../../services/ado-api.service';
 import { SprintUpdateStoreService } from '../../services/sprint-update-store.service';
-import { SprintUpdateData, WeekView, SprintFeatureRow } from '../../models/sprint-update.model';
+import { SprintUpdateData, WeekView, SprintFeatureRow, DependencyInfo } from '../../models/sprint-update.model';
 
 @Component({
   selector: 'app-sprint-update-dashboard',
@@ -113,5 +113,9 @@ export class SprintUpdateDashboardComponent implements OnInit {
 
   get carryoverFeatures(): SprintFeatureRow[] {
     return this.data?.postSprint.carryoverFeatures || [];
+  }
+
+  formatDependencies(deps: DependencyInfo[]): string {
+    return deps.map(d => `#${d.id} ${d.title}`).join(', ');
   }
 }

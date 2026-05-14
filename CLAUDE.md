@@ -66,11 +66,11 @@ Executes the current sprint plan end-to-end. See `.claude/commands/proceed.md` f
 1. Pull latest `develop`, create `feature/sprint-NNN-<slug>`, checkout.
 2. Delegate code generation to **sprint-coder** (Haiku) per the plan.
 3. Run builds (`npm run type-check` or `npm run build`) in both projects.
-4. Delegate test generation + execution to **sprint-tester** (Haiku).
-5. Invoke `/security-review` skill.
-6. Verify backend (`http://localhost:3000`) and frontend (`http://localhost:4200`) are running.
-7. Delegate commit + push + PR to **sprint-committer** (Haiku).
-8. Update sprint file status to `in-progress` (or `complete` if all WIs done) and report PR URL.
+4. Verify backend (`http://localhost:3000`) and frontend (`http://localhost:4200`) are running.
+5. Delegate commit + push + PR to **sprint-committer** (Haiku).
+6. Update sprint file status to `in-progress` (or `complete` if all WIs done) and report PR URL.
+
+**Explicitly removed from the pipeline (user request, 2026-05-14):** unit-test generation, security review, and code-review/simplify passes. Do not invoke `sprint-tester`, `/security-review`, or any review/simplify skill during `/proceed`. The `sprint-tester` agent file is kept for opt-in use if the user explicitly asks.
 
 ## Cost / model usage
 

@@ -148,7 +148,7 @@
                   </td>
                   <td>
                     <span *ngIf="feature.dependencies.length > 0">
-                      {{ feature.dependencies.map(d => '#' + d.id + ' ' + d.title).join(', ') }}
+                      {{ formatDependencies(feature.dependencies) }}
                     </span>
                     <span *ngIf="feature.dependencies.length === 0" class="no-data">—</span>
                   </td>
@@ -211,7 +211,7 @@
                   </td>
                   <td>
                     <span *ngIf="feature.dependencies.length > 0">
-                      {{ feature.dependencies.map(d => '#' + d.id + ' ' + d.title).join(', ') }}
+                      {{ formatDependencies(feature.dependencies) }}
                     </span>
                     <span *ngIf="feature.dependencies.length === 0" class="no-data">—</span>
                   </td>

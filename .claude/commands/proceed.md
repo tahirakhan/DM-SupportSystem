@@ -1,5 +1,5 @@
 ---
-description: Execute the current sprint plan end-to-end (branch, code, build, test, security, commit, push, PR)
+description: Execute the current sprint plan end-to-end (branch, code, build, smoke, commit, push, PR)
 allowed-tools: Read, Glob, Grep, Bash, Edit, Write, Agent, Skill
 ---
 
@@ -24,7 +24,6 @@ The main session should be on **Haiku**. Heavy work delegates to subagents. The 
 Delegate to **sprint-coder** agent (Haiku). Pass it:
 - The full sprint plan
 - The list of unchecked work items
-- A note that it must implement code only — no test files yet
 
 The coder returns when done. Read its summary; if it reports blockers, surface them to the user and stop.
 
@@ -36,25 +35,7 @@ Run in parallel:
 
 If either fails, delegate fix to **sprint-coder** with the error output. Re-run after fix. Max 2 fix attempts; if still failing, surface to user and stop.
 
-## Step 4 — Test generation + execution
-
-Delegate to **sprint-tester** agent (Haiku). Pass it:
-- The list of files changed in this branch (`git diff --name-only develop`)
-- The sprint plan
-
-The tester:
-1. Installs Jest in backend if not present (`npm i -D jest @types/jest ts-jest` + config). Adds `npm test` script.
-2. Installs Karma + Jasmine in frontend if not present (Angular's `ng add @angular/karma` or equivalent). Adds `ng test --watch=false` as the test script.
-3. Writes unit tests for the changed files.
-4. Runs the tests. If failures, fixes the tests (not the code) — unless the test reveals a real bug, in which case it reports back.
-
-If tester reports a real bug, surface to user with options: fix manually, dispatch coder to fix, or stop.
-
-## Step 5 — Security review
-
-Invoke the built-in `/security-review` skill via the Skill tool. Surface findings to the user. If findings are HIGH severity, stop and ask the user how to proceed. LOW/MEDIUM findings: log and continue.
-
-## Step 6 — Smoke verification
+## Step 4 — Smoke verification
 
 Ensure both services are running:
 - `curl -s http://localhost:3000/api/health` (or any known endpoint) → expect 200
@@ -62,7 +43,7 @@ Ensure both services are running:
 
 If either is down, start it in the background (`npm run dev` in backend, `npm start` in frontend) and re-check. If still down, surface to user.
 
-## Step 7 — Commit + push + PR
+## Step 5 — Commit + push + PR
 
 Delegate to **sprint-committer** agent (Haiku). Pass it:
 - Sprint number + slug
@@ -77,19 +58,29 @@ The committer:
 4. Pushes the branch with `-u origin`.
 5. Opens a PR against `develop` using `gh pr create` (or surfaces the GitHub URL if `gh` isn't installed).
 
-## Step 8 — Update sprint state
+## Step 6 — Update sprint state
 
 After commit, mark the executed work items as `[~]` (in-PR) in `.claude/sprints/sprint-NNN.md`. They only become `[x]` once the PR is merged. Optionally update sprint frontmatter `status: in-progress`.
 
 Commit the sprint-file update separately (small follow-up commit on the same branch) with message `chore: mark WIs as in-PR for sprint NNN`.
 
-## Step 9 — Report
+## Step 7 — Report
 
 Tell the user:
 - PR URL
 - What was completed
-- Any warnings (security findings, test caveats)
+- Any warnings
 - Next sprint / next work item suggestion
+
+## Removed from this workflow
+
+The following steps were **explicitly removed** by user request on 2026-05-14 and must NOT be re-introduced unless the user asks:
+
+- Unit-test generation and execution (no `sprint-tester` agent invocation)
+- Security review (no `/security-review` skill call, no security-focused agent)
+- Code-review / simplify passes
+
+If the user later wants any of these back, they can ask — the `sprint-tester` agent file is still present for opt-in invocation, but `/proceed` does not call it.
 
 ## Error handling
 

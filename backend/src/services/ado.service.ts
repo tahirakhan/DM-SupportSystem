@@ -62,6 +62,42 @@ class AdoService {
       },
       timeout: 30_000,
     });
+
+    this.client.interceptors.request.use((req) => {
+      const method = (req.method || 'GET').toUpperCase();
+      const url = req.url || '';
+      console.log(`[ADO →] ${method} ${url}`);
+      if (req.data && typeof req.data === 'object') {
+        if (typeof req.data.query === 'string') {
+          console.log(`[ADO →] WIQL: ${req.data.query.replace(/\s+/g, ' ').trim()}`);
+        } else if (Array.isArray(req.data.ids)) {
+          console.log(`[ADO →] Body: { ids: [${req.data.ids.length} items], fields: ${req.data.fields?.length ?? '?'} }`);
+        } else {
+          console.log(`[ADO →] Body: ${JSON.stringify(req.data).slice(0, 200)}`);
+        }
+      }
+      return req;
+    });
+
+    this.client.interceptors.response.use(
+      (res) => {
+        const url = res.config.url || '';
+        const data = res.data;
+        let count: string | number = 'n/a';
+        if (Array.isArray(data?.value)) count = data.value.length;
+        else if (Array.isArray(data?.workItems)) count = data.workItems.length;
+        else if (Array.isArray(data?.children)) count = data.children.length;
+        else if (Array.isArray(data)) count = data.length;
+        console.log(`[ADO ←] ${res.status} ${url} records=${count}`);
+        return res;
+      },
+      (err) => {
+        const url = err.config?.url || '?';
+        const status = err.response?.status || 'NETWORK';
+        console.log(`[ADO ←] ${status} ${url} ERROR ${err.message}`);
+        return Promise.reject(err);
+      },
+    );
   }
 
   async getFeatures(areaPath: string, iterationPath: string): Promise<FeatureDTO[]> {
@@ -124,35 +160,77 @@ class AdoService {
   }
 
   async getSprintUpdateData(areaPath: string, iterationPath: string): Promise<SprintUpdateData> {
-    // Fetch features and their child stories with relations
-    const featureIds = await this.queryFeatureIds(areaPath, iterationPath);
-    if (featureIds.length === 0) {
+    // Query sprint-scoped stories and defects (not features — they're at PI level)
+    const sprintItemIds = await this.querySprintItemIds(areaPath, iterationPath);
+    if (sprintItemIds.length === 0) {
       return this.buildEmptySprintUpdateData(areaPath, iterationPath);
     }
 
-    const features = await this.batchFetchWorkItems(featureIds, true);
+    // Fetch sprint items with relations to find parent feature IDs
+    const sprintItems = await this.batchFetchWorkItemsWithTags(sprintItemIds);
 
-    const childIdToFeatureId = new Map<number, number>();
-    for (const feature of features) {
-      for (const rel of feature.relations ?? []) {
-        if (rel.rel === CHILD_RELATION) {
-          const childId = this.extractId(rel.url);
-          if (childId !== null) childIdToFeatureId.set(childId, feature.id);
+    // Extract parent feature IDs from Hierarchy-Reverse relations
+    const featureIds = new Set<number>();
+    const orphanItemIds: number[] = [];
+
+    for (const item of sprintItems) {
+      const itemType = item.fields['System.WorkItemType'];
+      if (itemType !== 'User Story' && itemType !== 'Defect') {
+        continue;
+      }
+
+      let foundParent = false;
+      for (const rel of item.relations ?? []) {
+        if (rel.rel === 'System.LinkTypes.Hierarchy-Reverse') {
+          const parentId = this.extractId(rel.url);
+          if (parentId !== null) {
+            featureIds.add(parentId);
+            foundParent = true;
+            break; // Each story has at most one parent
+          }
+        }
+      }
+
+      if (!foundParent) {
+        // Log warning for orphan items (no parent feature)
+        console.warn(
+          `Sprint item ${item.id} (${itemType}) has no parent feature. Skipping.`
+        );
+        orphanItemIds.push(item.id);
+      }
+    }
+
+    if (featureIds.size === 0) {
+      return this.buildEmptySprintUpdateData(areaPath, iterationPath);
+    }
+
+    // Fetch the parent features with relations to support dependency extraction
+    const features = await this.batchFetchWorkItems(Array.from(featureIds), true);
+
+    // Build a map of sprint item ID to feature ID for quick lookup
+    const itemIdToFeatureId = new Map<number, number>();
+    for (const item of sprintItems) {
+      for (const rel of item.relations ?? []) {
+        if (rel.rel === 'System.LinkTypes.Hierarchy-Reverse') {
+          const parentId = this.extractId(rel.url);
+          if (parentId !== null) {
+            itemIdToFeatureId.set(item.id, parentId);
+          }
         }
       }
     }
 
-    const storyIds = [...childIdToFeatureId.keys()];
     const storiesMap = new Map<number, WorkItem>();
     const allDependencyIds = new Set<number>();
 
-    if (storyIds.length > 0) {
-      const stories = await this.batchFetchWorkItemsWithTags(storyIds);
-      for (const s of stories) {
-        if (s.fields['System.WorkItemType'] === 'User Story') {
-          storiesMap.set(s.id, s);
+    // Populate stories map and collect dependency IDs
+    for (const item of sprintItems) {
+      const itemType = item.fields['System.WorkItemType'];
+      if (itemType === 'User Story' || itemType === 'Defect') {
+        if (itemIdToFeatureId.has(item.id)) {
+          storiesMap.set(item.id, item);
           // Collect dependency IDs from relations
-          for (const rel of s.relations ?? []) {
+          for (const rel of item.relations ?? []) {
             if (
               rel.rel === 'System.LinkTypes.Dependency-Forward' ||
               rel.rel === 'System.LinkTypes.Dependency-Reverse'
@@ -193,9 +271,9 @@ class AdoService {
 
     for (const feature of features) {
       const childStories: WorkItem[] = [];
-      for (const [sid, fid] of childIdToFeatureId) {
-        if (fid === feature.id && storiesMap.has(sid)) {
-          childStories.push(storiesMap.get(sid)!);
+      for (const [itemId, featureId] of itemIdToFeatureId) {
+        if (featureId === feature.id && storiesMap.has(itemId)) {
+          childStories.push(storiesMap.get(itemId)!);
         }
       }
 
@@ -269,12 +347,12 @@ class AdoService {
 
   private async batchFetchWorkItemsWithTags(ids: number[]): Promise<WorkItem[]> {
     const results: WorkItem[] = [];
-    const fields =
-      'System.Id,System.Title,System.WorkItemType,System.State,System.AreaPath,System.IterationPath,Microsoft.VSTS.Scheduling.StoryPoints,System.Tags';
 
     for (let i = 0; i < ids.length; i += BATCH_SIZE) {
       const batch = ids.slice(i, i + BATCH_SIZE);
-      const query = `ids=${batch.join(',')}&$expand=relations&fields=${fields}&api-version=7.0`;
+      // ADO rejects $expand combined with fields — when expanding relations,
+      // the API returns all default fields (including System.Tags), so omit fields.
+      const query = `ids=${batch.join(',')}&$expand=relations&api-version=7.0`;
       const res = await this.client.get(
         `/${this.project}/_apis/wit/workitems?${query}`
       );
@@ -437,6 +515,22 @@ class AdoService {
       },
       features: [],
     };
+  }
+
+  private async querySprintItemIds(areaPath: string, iterationPath: string): Promise<number[]> {
+    const query = [
+      `SELECT [System.Id] FROM WorkItems`,
+      `WHERE [System.WorkItemType] IN ('User Story', 'Defect')`,
+      `AND [System.AreaPath] UNDER '${areaPath}'`,
+      `AND [System.IterationPath] = '${iterationPath}'`,
+      `ORDER BY [System.Id]`,
+    ].join(' ');
+
+    const res = await this.client.post(
+      `/${this.project}/_apis/wit/wiql?api-version=7.0`,
+      { query }
+    );
+    return (res.data.workItems ?? []).map((wi: { id: number }) => wi.id);
   }
 
   private async queryFeatureIds(areaPath: string, iterationPath: string): Promise<number[]> {
