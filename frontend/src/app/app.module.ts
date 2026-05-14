@@ -3,6 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule } from '@angular/common/http';
 import { ReactiveFormsModule } from '@angular/forms';
+import { NgChartsModule } from 'ng2-charts';
 
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
@@ -17,6 +18,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatRippleModule } from '@angular/material/core';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 import { AppRoutingModule } from './app-routing.module';
 import { ConfigService } from './services/config.service';
@@ -33,6 +35,8 @@ import { PiDashboardComponent } from './components/pi-dashboard/pi-dashboard.com
 import { SprintCardComponent } from './components/pi-dashboard/sprint-card/sprint-card.component';
 import { FeatureSprintTableComponent } from './components/pi-dashboard/feature-sprint-table/feature-sprint-table.component';
 import { PiBurnupComponent } from './components/pi-dashboard/pi-burnup/pi-burnup.component';
+import { TeamSelectorComponent } from './components/team-selector/team-selector.component';
+import { SprintProgressDashboardComponent } from './components/sprint-progress-dashboard/sprint-progress-dashboard.component';
 
 @NgModule({
   declarations: [
@@ -48,6 +52,8 @@ import { PiBurnupComponent } from './components/pi-dashboard/pi-burnup/pi-burnup
     SprintCardComponent,
     FeatureSprintTableComponent,
     PiBurnupComponent,
+    TeamSelectorComponent,
+    SprintProgressDashboardComponent,
   ],
   imports: [
     BrowserModule,
@@ -55,6 +61,7 @@ import { PiBurnupComponent } from './components/pi-dashboard/pi-burnup/pi-burnup
     HttpClientModule,
     ReactiveFormsModule,
     AppRoutingModule,
+    NgChartsModule,
     MatToolbarModule,
     MatIconModule,
     MatSelectModule,
@@ -68,6 +75,7 @@ import { PiBurnupComponent } from './components/pi-dashboard/pi-burnup/pi-burnup
     MatTooltipModule,
     MatRippleModule,
     MatDividerModule,
+    MatExpansionModule,
   ],
   providers: [
     {

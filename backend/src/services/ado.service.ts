@@ -6,6 +6,8 @@ import {
   SprintNode, SprintSummary, FeatureSprintCell,
   PiFeatureRow, PiSummary, BurnupPoint, PiData,
 } from '../models/pi.model';
+import { TeamDTO, TeamIteration } from '../models/team.model';
+import { cacheService } from './cache.service';
 
 const STATE_BUCKETS: { key: keyof StateCount; match: string[] }[] = [
   { key: 'new',            match: ['new', 'to do', 'todo'] },
@@ -522,6 +524,107 @@ class AdoService {
   private extractId(url: string): number | null {
     const m = url.match(/\/(\d+)$/);
     return m ? parseInt(m[1], 10) : null;
+  }
+
+  // ── Sprint Items (for sprint progress) ────────────────────────────────────
+
+  async querySprintItemIds(areaPath: string, sprintPath: string): Promise<number[]> {
+    const query = [
+      `SELECT [System.Id] FROM WorkItems`,
+      `WHERE [System.WorkItemType] IN ('User Story', 'Defect')`,
+      `AND [System.State] <> 'Removed'`,
+      `AND [System.AreaPath] UNDER '${areaPath}'`,
+      `AND [System.IterationPath] = '${sprintPath}'`,
+      `ORDER BY [System.Id]`,
+    ].join(' ');
+
+    const res = await this.client.post(
+      `/${this.project}/_apis/wit/wiql?api-version=7.0`,
+      { query }
+    );
+    return (res.data.workItems ?? []).map((wi: { id: number }) => wi.id);
+  }
+
+  async batchFetchWorkItemsWithFields(ids: number[], fields: string[]): Promise<WorkItem[]> {
+    const BATCH_SIZE = 200;
+    const results: WorkItem[] = [];
+    const fieldList = fields.join(',');
+
+    for (let i = 0; i < ids.length; i += BATCH_SIZE) {
+      const batch = ids.slice(i, i + BATCH_SIZE);
+      const query = `ids=${batch.join(',')}&fields=${fieldList}&api-version=7.0`;
+      const res = await this.client.get(
+        `/${this.project}/_apis/wit/workitems?${query}`
+      );
+      results.push(...(res.data.value ?? []));
+    }
+
+    return results;
+  }
+
+  // ── Teams integration ──────────────────────────────────────────────────────
+
+  async getTeams(): Promise<TeamDTO[]> {
+    return cacheService.withCache(
+      `teams:${this.organization}:${this.project}`,
+      3600,
+      async () => {
+        const listRes = await this.client.get(
+          `/_apis/projects/${this.project}/teams?api-version=7.0`,
+        );
+        const teams = listRes.data.value as Array<{ id: string; name: string }>;
+
+        const out: TeamDTO[] = [];
+        const CONCURRENCY = 5;
+
+        for (let i = 0; i < teams.length; i += CONCURRENCY) {
+          const batch = teams.slice(i, i + CONCURRENCY);
+          const hydrated = await Promise.all(
+            batch.map(async (t) => {
+              const [settings, currentIter] = await Promise.all([
+                this.getTeamSettings(t.id).catch(() => null),
+                this.getCurrentIterationForTeam(t.id).catch(() => null),
+              ]);
+              return {
+                id: t.id,
+                name: t.name,
+                areaPath: settings?.defaultTeamFieldValue?.value ?? '',
+                defaultIterationPath: settings?.defaultIteration?.path ?? '',
+                currentIteration: currentIter,
+              };
+            }),
+          );
+          out.push(...hydrated);
+        }
+        return out;
+      },
+    );
+  }
+
+  async getTeamSettings(teamId: string): Promise<any> {
+    const res = await this.client.get(
+      `/${this.project}/${teamId}/_apis/work/teamsettings?api-version=7.0`,
+    );
+    return res.data;
+  }
+
+  async getCurrentIterationForTeam(teamId: string): Promise<TeamIteration | null> {
+    try {
+      const res = await this.client.get(
+        `/${this.project}/${teamId}/_apis/work/teamsettings/iterations?$timeframe=current&api-version=7.0`,
+      );
+      const it = res.data.value?.[0];
+      if (!it) return null;
+      return {
+        id: it.id,
+        name: it.name,
+        path: it.path,
+        startDate: it.attributes?.startDate,
+        finishDate: it.attributes?.finishDate,
+      };
+    } catch {
+      return null;
+    }
   }
 }
 

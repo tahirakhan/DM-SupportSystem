@@ -7,6 +7,10 @@ export interface WorkItemFields {
   'System.IterationPath': string;
   'Microsoft.VSTS.Scheduling.StoryPoints'?: number;
   'Microsoft.VSTS.Scheduling.Size'?: string;
+  'System.CreatedDate'?: string;
+  'System.ChangedDate'?: string;
+  'System.AssignedTo'?: { displayName: string; id: string };
+  'System.Tags'?: string;
 }
 
 export interface WorkItemRelation {

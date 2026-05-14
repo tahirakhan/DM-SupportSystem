@@ -4,6 +4,8 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { FeatureDTO } from '../models/feature.model';
 import { PiData } from '../models/pi.model';
+import { TeamDTO } from '../models/team.model';
+import { SprintProgressData } from '../models/sprint-progress.model';
 
 @Injectable({ providedIn: 'root' })
 export class AdoApiService {
@@ -35,5 +37,20 @@ export class AdoApiService {
       .set('areaPath', areaPath)
       .set('iterationPath', iterationPath);
     return this.http.get<PiData>(`${this.base}/pi`, { params });
+  }
+
+  getTeams(): Observable<TeamDTO[]> {
+    return this.http.get<TeamDTO[]>(`${this.base}/teams`);
+  }
+
+  getSprintProgress(teamId: string, sprintId?: string, refresh = false): Observable<SprintProgressData> {
+    let params = new HttpParams().set('teamId', teamId);
+    if (sprintId) {
+      params = params.set('sprintId', sprintId);
+    }
+    if (refresh) {
+      params = params.set('refresh', '1');
+    }
+    return this.http.get<SprintProgressData>(`${this.base}/dashboards/sprint-progress`, { params });
   }
 }

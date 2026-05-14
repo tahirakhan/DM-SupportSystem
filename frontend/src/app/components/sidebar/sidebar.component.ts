@@ -31,6 +31,7 @@ export class SidebarComponent {
     { label: 'Feature Dashboard', icon: 'dashboard',      route: '/features' },
     { label: 'Release Dashboard', icon: 'rocket_launch',  route: '/release' },
     { label: 'PI Dashboard',      icon: 'view_timeline',  route: '/pi' },
+    { label: 'Sprint Progress',   icon: 'monitoring',     route: '/sprint-progress' },
   ];
 
   constructor(private router: Router) {}

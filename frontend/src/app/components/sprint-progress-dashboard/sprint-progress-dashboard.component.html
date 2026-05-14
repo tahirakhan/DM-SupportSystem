@@ -1,0 +1,275 @@
+<div class="sprint-progress-container">
+  <!-- Setup Overlay - No Team Selected -->
+  <ng-container *ngIf="!(current$ | async); else contentBlock">
+    <mat-card class="setup-card">
+      <mat-card-content>
+        <div class="setup-content">
+          <mat-icon class="setup-icon">groups</mat-icon>
+          <h2>Sprint Progress Dashboard</h2>
+          <p class="setup-subtitle">Select a team to view the current sprint's progress.</p>
+          <div class="team-selector-wrapper">
+            <app-team-selector></app-team-selector>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </ng-container>
+
+  <ng-template #contentBlock>
+    <!-- Header Row -->
+    <div class="header-row">
+      <div class="team-selector-wrapper">
+        <app-team-selector></app-team-selector>
+      </div>
+      <div class="header-actions">
+        <button mat-icon-button (click)="refresh()" [disabled]="(loading$ | async) ?? false">
+          <mat-icon>refresh</mat-icon>
+        </button>
+        <span class="last-loaded" *ngIf="lastLoaded$ | async as lastLoaded">
+          Loaded {{ formatLastLoaded(lastLoaded) }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <ng-container *ngIf="(loading$ | async) && !(data$ | async); else loadedBlock">
+      <div class="loading-state">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Loading sprint progress...</p>
+      </div>
+    </ng-container>
+
+    <ng-template #loadedBlock>
+      <!-- Error State -->
+      <ng-container *ngIf="(error$ | async) as error">
+        <mat-card class="error-card">
+          <mat-card-content>
+            <div class="error-content">
+              <mat-icon>error</mat-icon>
+              <p>{{ error }}</p>
+              <button mat-raised-button color="primary" (click)="refresh()">Retry</button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </ng-container>
+
+      <!-- Content -->
+      <ng-container *ngIf="data$ | async as data">
+        <!-- Sprint Header Card -->
+        <mat-card class="sprint-header-card">
+          <mat-card-content>
+            <h2>{{ data.sprint.name }}</h2>
+            <div class="sprint-meta-row">
+              <div class="sprint-meta-item">
+                <span class="label">Start Date</span>
+                <span class="value">{{ data.sprint.startDate | date: 'MMM d, y' }}</span>
+              </div>
+              <div class="sprint-meta-item">
+                <span class="label">End Date</span>
+                <span class="value">{{ data.sprint.finishDate | date: 'MMM d, y' }}</span>
+              </div>
+              <div class="sprint-meta-item">
+                <span class="label">Days Remaining</span>
+                <span class="value bold">{{ data.sprint.daysRemaining }}</span>
+              </div>
+              <div class="sprint-meta-item">
+                <span class="label">% Elapsed</span>
+                <span class="value small">{{ data.sprint.percentElapsed | number: '1.0-0' }}%</span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Stats Row -->
+        <div class="stats-row">
+          <mat-card class="stat-card">
+            <mat-card-content>
+              <div class="stat-label">Total Story Points</div>
+              <div class="stat-value">{{ data.summary.totalSp }}</div>
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card class="stat-card">
+            <mat-card-content>
+              <div class="stat-label">Done Story Points</div>
+              <div class="stat-value">{{ data.summary.doneSp }}</div>
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card class="stat-card">
+            <mat-card-content>
+              <div class="stat-label">% Complete (SP)</div>
+              <div class="ring-wrapper">
+                <app-progress-ring
+                  [percent]="data.summary.pctCompleteBySp"
+                  [size]="88"
+                  [strokeWidth]="9"
+                ></app-progress-ring>
+              </div>
+              <div class="stat-value">{{ data.summary.pctCompleteBySp | number: '1.0-0' }}%</div>
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card class="stat-card">
+            <mat-card-content>
+              <div class="stat-label">% Complete (Count)</div>
+              <div class="ring-wrapper">
+                <app-progress-ring
+                  [percent]="data.summary.pctCompleteByCount"
+                  [size]="88"
+                  [strokeWidth]="9"
+                ></app-progress-ring>
+              </div>
+              <div class="stat-value">{{ data.summary.pctCompleteByCount | number: '1.0-0' }}%</div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <!-- Burndown Chart -->
+        <mat-card class="full-width-card">
+          <mat-card-header>
+            <mat-card-title>Burndown</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <canvas
+              baseChart
+              [type]="'line'"
+              [data]="burndownData"
+              [options]="burndownOptions"
+              [height]="280"
+            ></canvas>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- State Breakdown -->
+        <mat-card class="full-width-card">
+          <mat-card-header>
+            <mat-card-title>State Breakdown</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="breakdown-row">
+              <div class="breakdown-chart">
+                <canvas
+                  baseChart
+                  [type]="'doughnut'"
+                  [data]="stateBreakdownData"
+                  [options]="stateBreakdownOptions"
+                  [height]="280"
+                ></canvas>
+              </div>
+              <div class="breakdown-legend">
+                <div class="legend-item" *ngFor="let state of data.stateBreakdown">
+                  <div class="legend-color" [style.background-color]="stateColors[state.state]"></div>
+                  <div class="legend-info">
+                    <div class="legend-label">{{ state.state }}</div>
+                    <div class="legend-detail">{{ state.count }} items, {{ state.sp }} SP</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Scope Change Card -->
+        <mat-card class="full-width-card" *ngIf="data.scopeChange.addedAfterStart.length > 0">
+          <mat-card-header>
+            <mat-card-title>
+              Scope Change: {{ data.scopeChange.addedAfterStart.length }} items added
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <mat-expansion-panel>
+              <mat-expansion-panel-header>
+                <mat-panel-title> Items Added After Sprint Start </mat-panel-title>
+              </mat-expansion-panel-header>
+              <div class="scope-list">
+                <div class="scope-item" *ngFor="let item of data.scopeChange.addedAfterStart">
+                  <span class="item-id">{{ item.id }}</span>
+                  <span class="item-title">{{ item.title }}</span>
+                  <span class="item-sp">{{ item.sp }} SP</span>
+                  <span class="item-date">{{ item.addedOn | date: 'MMM d, y' }}</span>
+                </div>
+              </div>
+            </mat-expansion-panel>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- At-Risk Items Table -->
+        <mat-card class="full-width-card" *ngIf="data.atRiskItems.length > 0">
+          <mat-card-header>
+            <mat-card-title>At-Risk Items ({{ data.atRiskItems.length }})</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="table-wrapper">
+              <table class="items-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Assignee</th>
+                    <th>State</th>
+                    <th>Days Since Update</th>
+                    <th>Reason</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of data.atRiskItems">
+                    <td class="id-cell">{{ item.id }}</td>
+                    <td>{{ item.title }}</td>
+                    <td>{{ item.assignedTo }}</td>
+                    <td>{{ item.state }}</td>
+                    <td>{{ item.daysSinceUpdate }}</td>
+                    <td>
+                      <mat-chip
+                        [ngClass]="
+                          item.reason === 'no-updates' ? 'chip-warning' : 'chip-danger'
+                        "
+                      >
+                        {{ item.reason === 'no-updates' ? 'No Updates' : 'Late Active' }}
+                      </mat-chip>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Blocked Items Table -->
+        <mat-card class="full-width-card" *ngIf="data.blockedItems.length > 0">
+          <mat-card-header>
+            <mat-card-title>Blocked Items ({{ data.blockedItems.length }})</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="table-wrapper">
+              <table class="items-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Assignee</th>
+                    <th>State</th>
+                    <th>Source</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of data.blockedItems">
+                    <td class="id-cell">{{ item.id }}</td>
+                    <td>{{ item.title }}</td>
+                    <td>{{ item.assignedTo }}</td>
+                    <td>{{ item.state }}</td>
+                    <td>
+                      <mat-chip [ngClass]="item.source === 'state' ? 'chip-gray' : 'chip-danger'">
+                        {{ item.source === 'state' ? 'State' : 'Tag' }}
+                      </mat-chip>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </ng-container>
+    </ng-template>
+  </ng-template>
+</div>
