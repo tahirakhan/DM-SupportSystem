@@ -15,6 +15,16 @@ docker-compose up --build
 # 3. Open http://localhost
 ```
 
+## Local Prerequisites
+
+MongoDB 6+ is required. Start a local instance:
+```bash
+# Docker (recommended)
+docker run -d -p 27017:27017 --name dm-mongo mongo:7
+
+# Or install locally: https://docs.mongodb.com/manual/installation/
+```
+
 ## Local Development
 
 ### Backend

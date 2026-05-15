@@ -9,6 +9,7 @@ export interface AdoConfig {
   defaultIterationPath: string;
   iterationPaths: string[];
   areaPaths: string[];
+  mongoUri?: string;
 }
 
 let cached: AdoConfig | null = null;
@@ -40,6 +41,7 @@ export function loadConfig(): AdoConfig {
 
   config.iterationPaths = config.iterationPaths ?? [config.defaultIterationPath];
   config.areaPaths = config.areaPaths ?? [config.defaultAreaPath];
+  config.mongoUri = process.env.MONGO_URI ?? 'mongodb://127.0.0.1:27017/dm-support';
 
   cached = config;
   return cached;
